@@ -83,7 +83,6 @@
 
         .action-btn {
             position: absolute;
-            top: 16px;
             width: 28px;
             height: 28px;
             padding: 5px;
@@ -97,23 +96,39 @@
         }
 
         .download-btn {
+            top: 16px;
             right: 16px;
         }
 
         .share-btn {
+            top: 16px;
             right: 52px;
         }
 
         .linkedin-btn {
-            right: 88px;
+            top: 52px;
+            right: 16px;
         }
 
         .media-btn {
-            right: 124px;
+            top: 52px;
+            right: 52px;
         }
 
         .mail-btn {
-            right: 160px;
+            top: 88px;
+            right: 16px;
+        }
+
+        .unicorn-btn {
+            top: 88px;
+            right: 52px;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .action-btn:hover {
@@ -153,11 +168,6 @@
             margin-bottom: 25px;
             line-height: 1.4;
             text-shadow: none;
-            opacity: 0;
-            transition: opacity 0.3s ease-in;
-        }
-
-        .output.loaded {
             opacity: 1;
         }
 
@@ -179,10 +189,6 @@
             vertical-align: middle;
         }
 
-        .unicorn-toggle {
-            cursor: pointer;
-        }
-        
         a { color: #40c4ff; text-decoration: none; border-bottom: 1px dotted #40c4ff; position: relative; }
         a:hover { background-color: #40c4ff; color: #012456; }
 
@@ -216,6 +222,13 @@
         .lolcat-mode #terminal,
         .lolcat-mode #terminal * {
             animation: lolcatHue 4s linear infinite;
+        }
+
+        .unicorn-toggle {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            position: relative;
+            z-index: 9999;
         }
 
         ::-webkit-scrollbar { width: 12px; }
@@ -292,6 +305,7 @@
                 <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </button>
+        <button class="action-btn unicorn-btn" type="button" onclick="toggleLolcat(event)" data-html2canvas-ignore="true" aria-label="Toggle rainbow mode">🦄</button>
         <div id="terminal-content">
             <div class="output" id="cv-output"></div>
         </div>
@@ -449,7 +463,7 @@ const cvData = {
 
         // Function to render CV data
         function renderCV(data) {
-            const wrapUnicorns = (text) => text.replace(/\u{1F984}/gu, '<a class="unicorn-toggle" href="#" onclick="toggleLolcat(event)">🦄</a>');
+            const wrapUnicorns = (text) => text.replace(/\u{1F984}/gu, '');
             let html = '';
 
             // Personal Info
@@ -525,16 +539,10 @@ const cvData = {
             if (typeof cvData !== 'undefined') {
                 const outputDiv = document.getElementById('cv-output');
                 outputDiv.innerHTML = renderCV(cvData);
-                requestAnimationFrame(() => {
-                    outputDiv.classList.add('loaded');
-                });
             } else {
                 const outputDiv = document.getElementById('cv-output');
                 outputDiv.innerHTML =
                     '<span style="color: #ff6b6b;">Error loading CV data. Please ensure cv-data.js exists.</span>';
-                requestAnimationFrame(() => {
-                    outputDiv.classList.add('loaded');
-                });
             }
         }
 
@@ -544,20 +552,6 @@ const cvData = {
             document.body.classList.toggle('lolcat-mode');
         }
 
-        document.addEventListener('click', function(ev) {
-            const link = ev.target && ev.target.closest ? ev.target.closest('.unicorn-toggle') : null;
-            if (!link) return;
-            ev.preventDefault();
-            toggleLolcat(ev);
-        }, { passive: false });
-
-        document.addEventListener('touchend', function(ev) {
-            const link = ev.target && ev.target.closest ? ev.target.closest('.unicorn-toggle') : null;
-            if (!link) return;
-            ev.preventDefault();
-            toggleLolcat(ev);
-        }, { passive: false });
-
         // Load CV when page is ready (cv-data.js loads first, so cvData will be available)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', loadCV);
@@ -565,29 +559,14 @@ const cvData = {
             loadCV();
         }
 
-        // Toggle lolcat mode by clicking the unicorn overlay or the unicorn emoji in text
+        // Toggle lolcat mode by clicking the unicorn overlay
         function setupLolcatToggle() {
             const unicorn = document.getElementById('character-overlay');
-            const cvOutput = document.getElementById('cv-output');
             const handler = () => document.body.classList.toggle('lolcat-mode');
             if (unicorn) {
                 unicorn.style.pointerEvents = 'auto';
                 unicorn.addEventListener('click', handler);
                 unicorn.addEventListener('touchend', handler);
-            }
-            if (cvOutput) {
-                cvOutput.addEventListener('click', (ev) => {
-                    const target = ev.target;
-                    if (target && target.closest('.unicorn-toggle')) {
-                        handler();
-                    }
-                });
-                cvOutput.addEventListener('touchend', (ev) => {
-                    const target = ev.target;
-                    if (target && target.closest('.unicorn-toggle')) {
-                        handler();
-                    }
-                });
             }
         }
 
@@ -627,6 +606,7 @@ const cvData = {
             let previewEl = null;
             let currentElement = null;
             let mouseMoveHandler = null;
+            let previewId = 0;
 
             function createPreview() {
                 if (!previewEl) {
@@ -656,13 +636,33 @@ const cvData = {
                 }
 
                 currentElement = element;
+                const thisPreviewId = ++previewId;
                 const preview = createPreview();
+                preview.classList.remove('visible');
 
                 // Check if it's a YouTube link
                 const videoId = extractYouTubeId(url);
                 if (videoId) {
                     const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                     preview.innerHTML = `<img src="${thumbnailUrl}" alt="Video preview" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+                    const img = preview.querySelector('img');
+                    if (img.complete) {
+                        if (currentElement === element) {
+                            preview.classList.add('visible');
+                        }
+                    } else {
+                        img.onload = () => {
+                            if (currentElement === element) {
+                                preview.classList.add('visible');
+                            }
+                        };
+                        img.onerror = () => {
+                            if (currentElement === element) {
+                                preview.classList.add('visible');
+                            }
+                        };
+                    }
                 } else {
                     // Don't show preview for non-YouTube links
                     return;
@@ -697,12 +697,9 @@ const cvData = {
                 };
 
                 document.addEventListener('mousemove', mouseMoveHandler);
-
-                setTimeout(() => preview.classList.add('visible'), 10);
             }
 
             function hidePreview() {
-                currentElement = null;
                 if (previewEl) {
                     previewEl.classList.remove('visible');
                     setTimeout(() => {
@@ -713,6 +710,7 @@ const cvData = {
                     document.removeEventListener('mousemove', mouseMoveHandler);
                     mouseMoveHandler = null;
                 }
+                currentElement = null;
             }
 
             // Handle media button (YouTube previews)
@@ -1181,52 +1179,9 @@ const cvData = {
     var fullHtml = renderCV(cvData);
     var el = document.getElementById('cv-output');
     if (!el) return;
-    var delay = Number(10);
-    var chunk = Number(3);
-    if (!isFinite(delay)) delay = 0;
-    if (!isFinite(chunk) || chunk < 1) chunk = 1;
-    console.log('[cv] start delay=', delay, 'chunk=', chunk);
-    // Instant render if disabled
-    if (delay <= 0) { el.innerHTML = fullHtml; return; }
-    var idx = 0;
-    var timer = null;
-    var speedUsed = false;
-    function cleanup(){
-      document.removeEventListener('keydown', onKey);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('wheel', onWheel);
-      document.removeEventListener('click', onClick);
-    }
-    function finish(){
-      idx = fullHtml.length;
-      el.innerHTML = fullHtml;
-      if (timer) clearTimeout(timer);
-      cleanup();
-    }
-    function step(){
-      idx += chunk;
-      if (idx >= fullHtml.length) { finish(); return; }
-      el.innerHTML = fullHtml.slice(0, idx);
-      timer = setTimeout(step, delay);
-    }
-    function speedUp(reason){
-      if (speedUsed) return;
-      speedUsed = true;
-      if (delay <= 1) { finish(); return; }
-      delay = Math.max(1, Math.floor(delay / 3));
-      chunk = Math.max(1, Math.min(fullHtml.length, Math.floor(chunk * 3)));
-      console.log('[cv] speed up (', reason, ') delay=', delay, 'chunk=', chunk);
-      if (timer) { clearTimeout(timer); timer = setTimeout(step, delay); }
-    }
-    function onKey(ev){ if (ev.key === 'Enter' || ev.key === 'NumpadEnter') speedUp('enter'); }
-    function onScroll(){ if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 4) speedUp('scroll'); }
-    function onWheel(){ speedUp('wheel'); }
-    function onClick(){ speedUp('click'); }
-    document.addEventListener('keydown', onKey, { passive: true });
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('wheel', onWheel, { passive: true });
-    document.addEventListener('click', onClick, { passive: true });
-    step();
+    // Always render instantly, no typing animation
+    el.innerHTML = fullHtml;
+    console.log('[cv] rendered instantly (no animation)');
   } catch (e) { console.error(e); }
 })();
 </script>
