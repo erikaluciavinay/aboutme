@@ -96,22 +96,17 @@
         }
 
         .download-btn {
-            top: 16px;
+            top: 52px;
             right: 16px;
         }
 
         .share-btn {
-            top: 16px;
+            top: 52px;
             right: 52px;
         }
 
-        .linkedin-btn {
-            top: 52px;
-            right: 16px;
-        }
-
         .media-btn {
-            top: 52px;
+            top: 88px;
             right: 52px;
         }
 
@@ -121,14 +116,45 @@
         }
 
         .unicorn-btn {
-            top: 88px;
-            right: 52px;
+            top: 124px;
+            right: 16px;
             font-size: 18px;
             line-height: 1;
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .lang-btn {
+            top: 16px;
+            width: 40px;
+            padding: 0;
+            font-family: inherit;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lang-en {
+            right: 104px;
+        }
+
+        .lang-es {
+            right: 60px;
+        }
+
+        .lang-sv {
+            right: 16px;
+        }
+
+        .lang-btn[aria-pressed="true"] {
+            background-color: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.55);
+            color: #ffffff;
         }
 
         .action-btn:hover {
@@ -253,6 +279,10 @@
                 margin-right: auto;
                 margin-left: auto;
             }
+            /* Clear the four button rows so the top of the CV is not hidden underneath */
+            #terminal-content {
+                padding: 168px 24px 24px;
+            }
         }
 
         @media (max-width: 500px) {
@@ -266,6 +296,29 @@
             }
             #terminal {
                 padding: 20px;
+            }
+            /* Smaller buttons, tighter language row, and text that cannot outrun the box */
+            .action-btn {
+                width: 26px;
+                height: 26px;
+            }
+            .lang-btn {
+                width: 34px;
+                font-size: 9px;
+                letter-spacing: 0;
+            }
+            .lang-en {
+                right: 88px;
+            }
+            .lang-es {
+                right: 52px;
+            }
+            #terminal-content {
+                padding: 156px 4px 24px;
+            }
+            .output {
+                font-size: 13px;
+                overflow-wrap: anywhere;
             }
         }
     </style>
@@ -286,11 +339,6 @@
                 <path d="M23 7C23 7 22.8 5.2 22 4.4C21 3.4 19.9 3.4 19.4 3.3C16.2 3 12 3 12 3C12 3 7.8 3 4.6 3.3C4.1 3.4 3 3.4 2 4.4C1.2 5.2 1 7 1 7C1 7 0.8 9.1 0.8 11.2V13.3C0.8 15.4 1 17.5 1 17.5C1 17.5 1.2 19.3 2 20.1C3 21.1 4.3 21.1 4.8 21.2C6.9 21.4 12 21.5 12 21.5C12 21.5 16.2 21.5 19.4 21.2C19.9 21.1 21 21.1 22 20.1C22.8 19.3 23 17.5 23 17.5C23 17.5 23.2 15.4 23.2 13.3V11.2C23.2 9.1 23 7 23 7ZM9.5 15.5V8.5L16.5 12L9.5 15.5Z" fill="currentColor"/>
             </svg>
         </button>
-        <button class="action-btn linkedin-btn" type="button" onclick="window.open('https://www.linkedin.com/in/erika-lucia-dorado-vinay-69718b398', '_blank')" data-html2canvas-ignore="true" aria-label="LinkedIn Profile">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20.5 2H3.5C2.67 2 2 2.67 2 3.5V20.5C2 21.33 2.67 22 3.5 22H20.5C21.33 22 22 21.33 22 20.5V3.5C22 2.67 21.33 2 20.5 2ZM8 19H5V10H8V19ZM6.5 8.25C5.5 8.25 4.75 7.5 4.75 6.5C4.75 5.5 5.5 4.75 6.5 4.75C7.5 4.75 8.25 5.5 8.25 6.5C8.25 7.5 7.5 8.25 6.5 8.25ZM19 19H16V14.25C16 13.19 15.81 11.81 14.31 11.81C12.81 11.81 12.59 12.97 12.59 14.19V19H9.59V10H12.41V11.43H12.45C12.86 10.66 13.97 9.93 15.61 9.93C18.61 9.93 19 11.93 19 14.5V19Z" fill="currentColor"/>
-            </svg>
-        </button>
         <button class="action-btn share-btn" type="button" onclick="sharePDF()" data-html2canvas-ignore="true" aria-label="Share CV">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4 12V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -306,6 +354,9 @@
             </svg>
         </button>
         <button class="action-btn unicorn-btn" type="button" onclick="toggleLolcat(event)" data-html2canvas-ignore="true" aria-label="Toggle rainbow mode">🐉</button>
+        <button class="action-btn lang-btn lang-en" type="button" onclick="setCvLang('en')" data-html2canvas-ignore="true" aria-pressed="true" aria-label="English">[ENG]</button>
+        <button class="action-btn lang-btn lang-es" type="button" onclick="setCvLang('es')" data-html2canvas-ignore="true" aria-pressed="false" aria-label="Español">[ESP]</button>
+        <button class="action-btn lang-btn lang-sv" type="button" onclick="setCvLang('sv')" data-html2canvas-ignore="true" aria-pressed="false" aria-label="Svenska">[SWE]</button>
         <div id="terminal-content">
             <div class="output" id="cv-output"></div>
         </div>
@@ -313,7 +364,7 @@
 
     <script>
 // CV Data - Edit this file to update your CV information
-const cvData = {
+const cvDataEN = {
   "personalInfo": {
     "name": "ERIKA LUCIA DORADO - SENIOR C++ DEVELOPER 🐉",
     "location": "Stockholm, Sweden",
@@ -439,8 +490,335 @@ const cvData = {
     "- <b>Unity Meet-up Organizer</b> - CDMX, September 2018 - August 2019",
     "- <b>Playstore Games Awards Finalist</b> - São Paulo, October 2018"
   ],
-  "languages": "Spanish (Native), English (Advanced C1)"
+  "languages": "Spanish (Native), English (Advanced C1)",
+  "ui": {
+    "code": "en",
+    "summaryHeading": "PROFESSIONAL SUMMARY",
+    "skillsHeading": "TECHNICAL SKILLS",
+    "experienceHeading": "PROFESSIONAL EXPERIENCE",
+    "educationHeading": "EDUCATION & TEACHING EXPERIENCE",
+    "communityHeading": "COMMUNITY INVOLVEMENT & RECOGNITION",
+    "languagesHeading": "LANGUAGES",
+    "skillLabels": {
+      "coreTechnologies": "Core Technologies",
+      "engineSystems": "Engine Systems",
+      "unrealEngineExpertise": "Unreal Engine Expertise",
+      "optimization": "Optimization",
+      "engineeringInfrastructure": "Engineering Infrastructure & DevOps",
+      "systemsInfrastructure": "Systems & Infrastructure",
+      "additional": "Additional"
+    },
+    "pdfName": "CV_Erika_Dorado_Senior_Cpp_EN.pdf",
+    "shareTitle": "CV - Erika Dorado",
+    "shareText": "Check out my CV!"
+  }
 };
+
+const cvDataES = {
+  "personalInfo": {
+    "name": "ERIKA LUCIA DORADO - DESARROLLADORA SENIOR C++ 🐉",
+    "location": "Estocolmo, Suecia",
+    "email": "<a href=\"mailto:erika.vinay@gmail.com\">erika.vinay@gmail.com</a>",
+    "linkedin": "https://www.linkedin.com/in/erika-lucia-dorado-vinay-69718b398",
+    "nationality": "Francesa/Mexicana"
+  },
+  "summary": "Desarrolladora Senior de C++ con <b>más de 11 años</b> lanzando juegos multijugador de alto rendimiento en <b>Steam, iOS, Android</b> y plataformas de consola. Ingeniera centrada en gameplay, con experiencia en producción orientada a pipelines, <b>Unreal Engine</b>, <b>Unity</b>, motores propietarios, sistemas de gameplay, redes, renderizado, <b>automatización DevOps</b> y optimización de bajo nivel. Desarrolló funcionalidades y gestionó releases de <b>Candy Crush Soda Saga</b> (<b>más de 50M de usuarios diarios</b>). Ha lanzado juegos con <b>más de 35M de descargas</b>. Experta en resolver retos técnicos complejos y entregar sistemas de producción con plazos ajustados.",
+  "technicalSkills": {
+    "coreTechnologies": "Unreal Engine (C++), C++17/20, C, Python, Bash, C#",
+    "engineSystems": "Programación de gameplay, HUD/UI, IA de NPC, shaders, sistemas de animación, audio (MetaSound), redes (SnapNet), sistemas de proyectiles, física y predicción, arquitectura cliente-servidor, integración backend/frontend",
+    "unrealEngineExpertise": "Materiales y shaders, efectos de post-procesado, widgets (UMG), Blueprints (scripting visual), generación automática de Blueprints/nodos, sistemas de VFX con Niagara, WebViews, depuración con Unreal Insights, profiling y optimización de GPU",
+    "optimization": "Optimización de C++ de bajo nivel, multithreading, control de carga de CPU, profiling de rendimiento, análisis de rendimiento de GPU",
+    "engineeringInfrastructure": "Herramientas del editor de Unreal, sistemas de programación visual, herramientas basadas en nodos, Jenkins, CI/CD, GitHub Actions, hooks de GitHub, Docker, GitLab (integraciones locales personalizadas), Steam API, Epic Online Services (EOS), Unreal Anti-Cheat, sistemas de build automatizados",
+    "systemsInfrastructure": "Linux (múltiples distribuciones), automatización en Windows, scripting en Bash, PowerShell, flujos de trabajo con Git, Perforce (P4V), configuración y administración de control de versiones, automatización de pipelines, orquestación de contenedores",
+    "additional": "Unity Engine, Unity Analytics, integración de tests A/B, integración de anuncios en móvil, SDL, gestión de proyectos, mentoría de equipos, LLama.cpp, Emacs"
+  },
+  "experience": [
+    {
+      "period": "[2024-Presente]",
+      "company": "<a href=\"https://modoyo.com/\" target=\"_blank\" rel=\"noopener noreferrer\">MODOYO</a>",
+      "title": "Desarrolladora Unreal C++",
+      "description": "<b>Desarrollé</b> y amplié enormemente un <a href=\"https://youtu.be/w878DUJyEos?si=eFx3in_DqM8YU7Sq\" target=\"_blank\" rel=\"noopener noreferrer\"><b>hero shooter multijugador de 16 jugadores</b></a>. <b>Responsable</b> de los sistemas de gameplay, el renderizado, las redes y la infraestructura DevOps.",
+      "achievements": [
+        "- <b>Diseñé</b> el gameplay: HUD/UI, IA de bots, materiales/shaders, <b>VFX con Niagara</b> con enlace de parámetros en tiempo real",
+        "- <b>Creé</b> shaders de post-procesado: contornos de personajes, efectos de habilidades, distorsiones de cámara",
+        "- <b>Desarrollé</b> herramientas de editor a medida: creación automática de contenido y generación de Blueprints",
+        "- <b>Programé</b> la autogeneración de Blueprints/nodos para prototipado rápido",
+        "- <b>Extendí</b> el motor con <b>Python</b> para automatización de builds, edición de niveles y manipulación de propiedades de actores",
+        "- <b>Mantuve</b> el DevOps de producción: <b>Jenkins</b>, <b>GitHub Actions</b>, <b>Docker</b>",
+        "- <b>Responsable</b> de la fiabilidad de Jenkins: implementé pipelines completos y diagnostiqué fallos",
+        "- <b>Integré</b> <b>Steam SDK</b>, <b>Epic Online Services</b> y <b>Anti-Cheat</b> en el pipeline de despliegue",
+        "- <b>Implementé</b> audio con MetaSound controlado por parámetros de gameplay",
+        "- <b>Diseñé</b> multijugador autoritativo con <b>SnapNet</b>: lógica de partida, habilidades de héroes, validación en servidor",
+        "- <b>Resolví</b> la sincronización de proyectiles con compensación de latencia y predicción: <b>netcode a 120fps</b>",
+        "- <b>Optimicé</b> rutas críticas: multithreading en C++, control de carga de CPU",
+        "- <b>Perfilé</b> con <b>Unreal Insights</b> y herramientas de GPU para eliminar cuellos de botella",
+        "- <b>Construí</b> componentes y frameworks modulares: widgets, power-ups/buffs, interacciones físicas de magnetismo, VFX",
+        "- <b>Implementé</b> héroes desde cero, incluidas sus habilidades y animaciones de combate",
+        "- <b>Desarrollé</b> sistemas de fases de ronda para gestionar y aplicar las reglas de partida",
+        "- Integración de <b>WebViews</b> en el juego para el frontend y las interfaces correspondientes.",
+        "- <b>Automaticé</b> builds y despliegues multiplataforma (Bash/PowerShell en Linux/Windows)"
+      ]
+    },
+    {
+      "period": "[2020-2024]",
+      "company": "<a href=\"https://www.king.com/\" target=\"_blank\" rel=\"noopener noreferrer\">KING</a> (ACTIVISION BLIZZARD)",
+      "title": "Desarrolladora C++",
+      "description": "<b>Desarrollé</b> funcionalidades para <a href=\"https://www.youtube.com/watch?v=8y_TiOJXVbo\" target=\"_blank\" rel=\"noopener noreferrer\"><b>Candy Crush Soda Saga</b></a> (<b>más de 50M de usuarios diarios</b>) sobre un motor propietario, además de gestionar los pipelines de despliegue del código en producción.",
+      "achievements": [
+        "- <b>Gestioné</b> el pipeline de releases del entorno en producción de Candy Crush Soda Saga (<b>50M+ DAU</b>)",
+        "- <b>Construí</b> modos multijugador competitivos: clasificaciones y torneos para <b>millones de jugadores simultáneos</b>",
+        "- <b>Lancé</b> un framework de tests A/B para experimentación basada en datos y analítica de jugadores",
+        "- <b>Creé</b> herramientas de programación visual para el motor C++ propietario de King: scripting por nodos sin C++",
+        "- <b>Entregué</b> funcionalidades full-stack: monedas, economías y eventos en vivo (de la UI al backend)",
+        "- <b>Desarrollé</b> herramientas internas del motor y scripting visual para el flujo de trabajo de diseño",
+        "- <b>Mantuve</b> la infraestructura <b>CI/CD</b>: automatización, tests unitarios y despliegue",
+        "- <b>Administré</b> <b>Git/Perforce</b> para equipos distribuidos: repositorios, ramas y resolución de merges",
+        "- <b>Realicé</b> entrevistas técnicas y revisiones de código para candidaturas a desarrollador C++"
+      ]
+    },
+    {
+      "period": "[2016-2020]",
+      "company": "<a href=\"https://hyperbeard.com/\" target=\"_blank\" rel=\"noopener noreferrer\">HYPERBEARD GAMES</a>",
+      "title": "Desarrolladora principal de videojuegos",
+      "description": "<b>Lideré</b> el <a href=\"https://youtu.be/Meau2OhUnm0?si=7OydyoMAeTS0LxI-\" target=\"_blank\" rel=\"noopener noreferrer\">desarrollo de juegos móviles</a> con <b>más de 35M de descargas</b> y <b>millones en ingresos</b>. <b>Responsable</b> de la arquitectura, la mentoría del equipo y las operaciones en vivo.",
+      "achievements": [
+        "- <b>Lancé 4 títulos</b> de concepto a producción: KleptoCats (<b>9M</b>), Chichens (<b>2M</b>), KleptoCats 2 (<b>4.5M</b>), BunnyBuns (<b>2M</b>)",
+        "- <b>Diseñé</b> bucles de juego, progresión, monetización y <b>Unity Analytics</b> para iterar",
+        "- <b>Creé</b> shaders de post-procesado y efectos de cámara en <b>Unity/C#</b>",
+        "- <b>Optimicé</b> la monetización con anuncios (AdMob, Unity Ads): ingresos sin dañar la experiencia del jugador",
+        "- <b>Contribuí</b> a <b>9 juegos</b>: código base, diseño técnico, QA, optimización y consultoría",
+        "- <b>Impulsé más de 35M de descargas</b> y millones en ingresos mediante live ops y funcionalidades basadas en analítica",
+        "- <b>Mentoricé</b> a perfiles junior, revisé código y establecí estándares de ingeniería",
+        "- <b>Gestioné</b> los flujos de control de versiones con <b>Git</b> y <b>GitLab</b> para la colaboración del equipo",
+        "- Dirigí live ops: actualizaciones semanales, correcciones y funcionalidades basadas en telemetría"
+      ]
+    },
+    {
+      "period": "[2015-2016]",
+      "company": "<a href=\"https://www.facebook.com/Elevatorgames/\" target=\"_blank\" rel=\"noopener noreferrer\">ELEVATOR GAMES</a>",
+      "title": "Desarrolladora Unity C#",
+      "description": "",
+      "achievements": [
+        "- <b>Prototipé</b> un juego de acción cenital para <b>PS Vita</b> con el <b>devkit oficial de Sony</b>, desarrollado en <b>Unity/C#</b>",
+        "- Gestioné las restricciones de consola, la optimización y los flujos de despliegue"
+      ]
+    },
+    {
+      "period": "[2013-2015]",
+      "company": "<a href=\"https://www.linkedin.com/in/erika-lucia-dorado-vinay-69718b398\" target=\"_blank\" rel=\"noopener noreferrer\">TRABAJO INDEPENDIENTE Y POR CONTRATO</a>",
+      "title": "Desarrolladora de videojuegos",
+      "description": "",
+      "achievements": [
+        "- <b>Desarrollé</b> juegos y aplicaciones interactivas como desarrolladora independiente",
+        "- Contratada por un profesor por mi talento: construí una base sólida en <b>C++</b> y arquitectura de videojuegos",
+        "- <b>Colaboré</b> con clientes en diseño técnico, implementación y entrega"
+      ]
+    }
+  ],
+  "education": {
+    "degree": "Licenciatura en Programación de Videojuegos",
+    "institution": "<a href=\"https://mexico.sae.edu/\" target=\"_blank\" rel=\"noopener noreferrer\">SAE Institute México</a>",
+    "period": "2011-2014"
+  },
+  "teachingExperience": [
+    {
+      "period": "[Marzo-Abril 2019]",
+      "company": "<a href=\"https://platzi.com/\" target=\"_blank\" rel=\"noopener noreferrer\">PLATZI</a>",
+      "title": "Educadora técnica",
+      "description": "- <b>Diseñé</b> y grabé un <b>curso de C++</b> online completo (<b>4.5/5.0</b> de valoración media)"
+    },
+    {
+      "period": "[Enero 2018 - Agosto 2019]",
+      "company": "<a href=\"https://www.cocoschool.mx/\" target=\"_blank\" rel=\"noopener noreferrer\">COCO SCHOOL</a>",
+      "title": "Instructora de desarrollo de videojuegos",
+      "description": "- <b>Impartí</b> los cursos de Programación de Videojuegos II, Mecánicas de Juego y Diseño de Juegos\n- <b>Diseñé</b> el temario, las sesiones, los planes de trabajo y las evaluaciones"
+    }
+  ],
+  "communityInvolvement": [
+    "- <b>Ponente en el Unity Developer Day</b> - CDMX, julio de 2017",
+    "- <b>Tokyo Game Show</b> - Showcase de KleptoCats - Tokio, 2019",
+    "- <b>Organizadora del Unity Meet-up</b> - CDMX, septiembre de 2018 - agosto de 2019",
+    "- <b>Finalista de los Playstore Games Awards</b> - São Paulo, octubre de 2018"
+  ],
+  "languages": "Español (nativo), Inglés (avanzado C1)",
+  "ui": {
+    "code": "es",
+    "summaryHeading": "RESUMEN PROFESIONAL",
+    "skillsHeading": "HABILIDADES TÉCNICAS",
+    "experienceHeading": "EXPERIENCIA PROFESIONAL",
+    "educationHeading": "EDUCACIÓN Y EXPERIENCIA DOCENTE",
+    "communityHeading": "PARTICIPACIÓN EN LA COMUNIDAD Y RECONOCIMIENTOS",
+    "languagesHeading": "IDIOMAS",
+    "skillLabels": {
+      "coreTechnologies": "Tecnologías principales",
+      "engineSystems": "Sistemas de motor",
+      "unrealEngineExpertise": "Experiencia en Unreal Engine",
+      "optimization": "Optimización",
+      "engineeringInfrastructure": "Infraestructura de ingeniería y DevOps",
+      "systemsInfrastructure": "Sistemas e infraestructura",
+      "additional": "Adicional"
+    },
+    "pdfName": "CV_Erika_Dorado_Senior_Cpp_ES.pdf",
+    "shareTitle": "CV - Erika Dorado",
+    "shareText": "¡Echa un vistazo a mi CV!"
+  }
+};
+
+const cvDataSV = {
+  "personalInfo": {
+    "name": "ERIKA LUCIA DORADO - SENIOR C++-UTVECKLARE 🐉",
+    "location": "Stockholm, Sverige",
+    "email": "<a href=\"mailto:erika.vinay@gmail.com\">erika.vinay@gmail.com</a>",
+    "linkedin": "https://www.linkedin.com/in/erika-lucia-dorado-vinay-69718b398",
+    "nationality": "Fransk/Mexikansk"
+  },
+  "summary": "Senior C++-utvecklare med <b>över 11 års</b> erfarenhet av att lansera högpresterande multiplayerspel på <b>Steam, iOS, Android</b> och konsolplattformar. Gameplay-inriktad ingenjör med expertis inom pipelinefokuserad produktion, <b>Unreal Engine</b>, <b>Unity</b>, egenutvecklade motorer, gameplay-system, nätverk, rendering, <b>DevOps-automatisering</b> och lågnivåoptimering. Utvecklade funktioner och ansvarade för releaser till <b>Candy Crush Soda Saga</b> (<b>50M+ dagliga användare</b>). Har lanserat spel med <b>35M+ nedladdningar</b>. Skicklig på att lösa komplexa tekniska utmaningar och leverera produktionssystem under snäva deadlines.",
+  "technicalSkills": {
+    "coreTechnologies": "Unreal Engine (C++), C++17/20, C, Python, Bash, C#",
+    "engineSystems": "Gameplay-programmering, HUD/UI, AI/NPC-intelligens, shaders, animationssystem, ljud (MetaSound), nätverk (SnapNet), projektilsystem, fysik och prediktion, klient-server-arkitektur, backend-/frontendintegration",
+    "unrealEngineExpertise": "Material och shaders, post-processing-effekter, widgets (UMG), Blueprints (visuell skriptning), automatiserad Blueprint-/nodgenerering, Niagara VFX-system, WebViews, felsökning med Unreal Insights, GPU-profilering och optimering",
+    "optimization": "Lågnivåoptimering i C++, multitrådning, CPU-throttling, prestandaprofilering, GPU-prestandaanalys",
+    "engineeringInfrastructure": "Unreal Editor-verktyg, visuella programmeringssystem, nodbaserade verktyg, Jenkins, CI/CD, GitHub Actions, GitHub-hooks, Docker, GitLab (egna lokala integrationer), Steam API, Epic Online Services (EOS), Unreal Anti-Cheat, automatiserade byggsystem",
+    "systemsInfrastructure": "Linux (flera distributioner), Windows-automatisering, Bash-skriptning, PowerShell, Git-arbetsflöden, Perforce (P4V), uppsättning och administration av versionshantering, pipelineautomatisering, containerorkestrering",
+    "additional": "Unity Engine, Unity Analytics, integration av A/B-tester, integration av mobilannonser, SDL, projektledning, mentorskap, LLama.cpp, Emacs"
+  },
+  "experience": [
+    {
+      "period": "[2024-Nu]",
+      "company": "<a href=\"https://modoyo.com/\" target=\"_blank\" rel=\"noopener noreferrer\">MODOYO</a>",
+      "title": "Unreal C++-utvecklare",
+      "description": "<b>Utvecklade</b> och byggde kraftigt ut en <a href=\"https://youtu.be/w878DUJyEos?si=eFx3in_DqM8YU7Sq\" target=\"_blank\" rel=\"noopener noreferrer\"><b>16-spelares hero shooter för multiplayer</b></a>. <b>Ansvarade</b> för gameplay-system, rendering, nätverk och DevOps-infrastruktur.",
+      "achievements": [
+        "- <b>Designade</b> gameplay: HUD/UI, bot-AI, material/shaders, <b>Niagara VFX</b> med parameterbindning i realtid",
+        "- <b>Skapade</b> post-processing-shaders: karaktärskonturer, förmågeeffekter, kameraförvrängningar",
+        "- <b>Byggde</b> egna Editor-verktyg: automatiserad innehållsproduktion och Blueprint-generering",
+        "- <b>Skriptade</b> automatisk generering av Blueprints/noder för snabb prototypning",
+        "- <b>Utökade</b> motorn med <b>Python</b> för byggautomatisering, nivåredigering och manipulation av aktörsegenskaper",
+        "- <b>Underhöll</b> DevOps i produktion: <b>Jenkins</b>, <b>GitHub Actions</b>, <b>Docker</b>",
+        "- <b>Ansvarade</b> för Jenkins driftsäkerhet: implementerade pipelines fullt ut och felsökte avbrott",
+        "- <b>Kopplade in</b> <b>Steam SDK</b>, <b>Epic Online Services</b> och <b>Anti-Cheat</b> i deploypipelinen",
+        "- <b>Implementerade</b> MetaSound-ljud med gameplay-styrda parametrar",
+        "- <b>Designade</b> auktoritativ multiplayer via <b>SnapNet</b>: matchlogik, hjälteförmågor, servervalidering",
+        "- <b>Löste</b> projektilsynkronisering med lag-kompensation och prediktion: <b>netcode i 120 fps</b>",
+        "- <b>Optimerade</b> heta kodvägar: C++-multitrådning, CPU-throttling",
+        "- <b>Profilerade</b> med <b>Unreal Insights</b> och GPU-verktyg för att eliminera flaskhalsar",
+        "- <b>Byggde</b> modulära komponenter och ramverk: widgets, power-ups/buffs, magnetiska fysikinteraktioner, VFX",
+        "- <b>Implementerade</b> hjältar från grunden, inklusive förmågor och stridsanimationer",
+        "- <b>Utvecklade</b> rondfassystem för att hantera och upprätthålla matchregler",
+        "- Integration av <b>WebViews</b> i spelet för spelets frontend och tillhörande gränssnitt.",
+        "- <b>Automatiserade</b> byggen och deployment över plattformar (Bash/PowerShell på Linux/Windows)"
+      ]
+    },
+    {
+      "period": "[2020-2024]",
+      "company": "<a href=\"https://www.king.com/\" target=\"_blank\" rel=\"noopener noreferrer\">KING</a> (ACTIVISION BLIZZARD)",
+      "title": "C++-utvecklare",
+      "description": "<b>Utvecklade</b> funktioner till <a href=\"https://www.youtube.com/watch?v=8y_TiOJXVbo\" target=\"_blank\" rel=\"noopener noreferrer\"><b>Candy Crush Soda Saga</b></a> (<b>50M+ dagliga användare</b>) på en egenutvecklad motor, samtidigt som jag ansvarade för deploypipelines för kod i produktion.",
+      "achievements": [
+        "- <b>Ansvarade</b> för releasepipelinen till Candy Crush Soda Sagas produktionsmiljö (<b>50M+ DAU</b>)",
+        "- <b>Byggde</b> konkurrensinriktade multiplayerlägen: topplistor och turneringar för <b>miljontals samtidiga spelare</b>",
+        "- <b>Levererade</b> ett ramverk för A/B-tester för datadriven experimentering och spelaranalys",
+        "- <b>Byggde</b> visuella programmeringsverktyg för Kings egen C++-motor: nodbaserad skriptning utan C++",
+        "- <b>Levererade</b> full-stack-funktioner: valutor, ekonomier, live-events (från UI till backend)",
+        "- <b>Skapade</b> interna motorverktyg och visuell skriptning för designers arbetsflöden",
+        "- <b>Underhöll</b> <b>CI/CD</b>-infrastruktur: automatisering, enhetstester, deployment",
+        "- <b>Administrerade</b> <b>Git/Perforce</b> för distribuerade team: repon, branching, merge-hantering",
+        "- <b>Höll</b> tekniska intervjuer och kodgranskningar för C++-utvecklarkandidater"
+      ]
+    },
+    {
+      "period": "[2016-2020]",
+      "company": "<a href=\"https://hyperbeard.com/\" target=\"_blank\" rel=\"noopener noreferrer\">HYPERBEARD GAMES</a>",
+      "title": "Ledande spelutvecklare",
+      "description": "<b>Ledde</b> <a href=\"https://youtu.be/Meau2OhUnm0?si=7OydyoMAeTS0LxI-\" target=\"_blank\" rel=\"noopener noreferrer\">utvecklingen av mobilspel</a> med totalt <b>35M+ nedladdningar</b> och <b>miljoner i intäkter</b>. <b>Ansvarade</b> för arkitektur, mentorskap och live ops.",
+      "achievements": [
+        "- <b>Lanserade 4 titlar</b> från koncept till live: KleptoCats (<b>9M</b>), Chichens (<b>2M</b>), KleptoCats 2 (<b>4.5M</b>), BunnyBuns (<b>2M</b>)",
+        "- <b>Designade</b> spelloopar, progression, monetisering och <b>Unity Analytics</b> för iteration",
+        "- <b>Skapade</b> post-processing-shaders och kameraeffekter i <b>Unity/C#</b>",
+        "- <b>Optimerade</b> annonsmonetisering (AdMob, Unity Ads): intäkter utan att försämra spelupplevelsen",
+        "- <b>Bidrog</b> till <b>9 spel</b>: kärnkod, teknisk design, QA, optimering, rådgivning",
+        "- <b>Drev fram 35M+ nedladdningar</b> och miljoner i intäkter via live ops och analysdrivna funktioner",
+        "- <b>Handledde</b> juniorer, kodgranskade och etablerade tekniska standarder",
+        "- <b>Hanterade</b> versionshanteringsflöden med <b>Git</b> och <b>GitLab</b> för teamsamarbete",
+        "- Körde live ops: veckovisa uppdateringar, buggfixar och funktioner utifrån telemetri"
+      ]
+    },
+    {
+      "period": "[2015-2016]",
+      "company": "<a href=\"https://www.facebook.com/Elevatorgames/\" target=\"_blank\" rel=\"noopener noreferrer\">ELEVATOR GAMES</a>",
+      "title": "Unity C#-utvecklare",
+      "description": "",
+      "achievements": [
+        "- <b>Prototypade</b> ett top-down actionspel för <b>PS Vita</b> med Sonys <b>officiella devkit</b>, byggt i <b>Unity/C#</b>",
+        "- Hanterade konsolbegränsningar, optimering och deployflöden"
+      ]
+    },
+    {
+      "period": "[2013-2015]",
+      "company": "<a href=\"https://www.linkedin.com/in/erika-lucia-dorado-vinay-69718b398\" target=\"_blank\" rel=\"noopener noreferrer\">FRILANS- OCH KONSULTUPPDRAG</a>",
+      "title": "Spelutvecklare",
+      "description": "",
+      "achievements": [
+        "- <b>Utvecklade</b> spel och interaktiva applikationer som frilansande utvecklare",
+        "- Rekryterad av en professor för min talang: byggde en grund i <b>C++</b> och spelarkitektur",
+        "- <b>Samarbetade</b> med kunder kring teknisk design, implementation och leverans"
+      ]
+    }
+  ],
+  "education": {
+    "degree": "Kandidatexamen i spelprogrammering",
+    "institution": "<a href=\"https://mexico.sae.edu/\" target=\"_blank\" rel=\"noopener noreferrer\">SAE Institute Mexico</a>",
+    "period": "2011-2014"
+  },
+  "teachingExperience": [
+    {
+      "period": "[Mars-April 2019]",
+      "company": "<a href=\"https://platzi.com/\" target=\"_blank\" rel=\"noopener noreferrer\">PLATZI</a>",
+      "title": "Teknisk utbildare",
+      "description": "- <b>Designade</b> och spelade in en heltäckande <b>C++-kurs</b> online (<b>4.5/5.0</b> i snittbetyg)"
+    },
+    {
+      "period": "[Januari 2018 - Augusti 2019]",
+      "company": "<a href=\"https://www.cocoschool.mx/\" target=\"_blank\" rel=\"noopener noreferrer\">COCO SCHOOL</a>",
+      "title": "Instruktör i spelutveckling",
+      "description": "- <b>Undervisade</b> i Spelprogrammering II, Spelmekanik och Speldesign\n- <b>Utformade</b> kursplan, lektioner, arbetsplaner och examinationer"
+    }
+  ],
+  "communityInvolvement": [
+    "- <b>Talare på Unity Developer Day</b> - CDMX, juli 2017",
+    "- <b>Tokyo Game Show</b> - KleptoCats-showcase - Tokyo, 2019",
+    "- <b>Arrangör av Unity Meet-up</b> - CDMX, september 2018 - augusti 2019",
+    "- <b>Finalist i Playstore Games Awards</b> - São Paulo, oktober 2018"
+  ],
+  "languages": "Spanska (modersmål), Engelska (avancerad C1)",
+  "ui": {
+    "code": "sv",
+    "summaryHeading": "PROFESSIONELL SAMMANFATTNING",
+    "skillsHeading": "TEKNISKA FÄRDIGHETER",
+    "experienceHeading": "YRKESERFARENHET",
+    "educationHeading": "UTBILDNING & UNDERVISNINGSERFARENHET",
+    "communityHeading": "ENGAGEMANG I COMMUNITYT & UTMÄRKELSER",
+    "languagesHeading": "SPRÅK",
+    "skillLabels": {
+      "coreTechnologies": "Kärnteknologier",
+      "engineSystems": "Motorsystem",
+      "unrealEngineExpertise": "Unreal Engine-expertis",
+      "optimization": "Optimering",
+      "engineeringInfrastructure": "Teknisk infrastruktur & DevOps",
+      "systemsInfrastructure": "System & infrastruktur",
+      "additional": "Övrigt"
+    },
+    "pdfName": "CV_Erika_Dorado_Senior_Cpp_SV.pdf",
+    "shareTitle": "CV - Erika Dorado",
+    "shareText": "Ta en titt på mitt CV!"
+  }
+};
+
+const CV_BY_LANG = { en: cvDataEN, es: cvDataES, sv: cvDataSV };
+
+// Active dataset. Reassigned by setCvLang() so every consumer below stays language-agnostic.
+let cvLang = 'en';
+let cvData = cvDataEN;
 
 </script>
 <script src="https://unpkg.com/jspdf@2.5.1/dist/polyfills.umd.js"></script>
@@ -464,6 +842,8 @@ const cvData = {
         // Function to render CV data
         function renderCV(data) {
             const wrapDragons = (text) => text.replace(/\u{1F409}/gu, '');
+            const u = data.ui;
+            const rule = (heading) => '-'.repeat(heading.length);
             let html = '';
 
             // Personal Info
@@ -477,24 +857,20 @@ const cvData = {
             html += '\n';
 
             // Professional Summary
-            html += `<span class="section">PROFESSIONAL SUMMARY</span>\n`;
-            html += '--------------------\n';
+            html += `<span class="section">${u.summaryHeading}</span>\n`;
+            html += `${rule(u.summaryHeading)}\n`;
             html += `<div class="summary-section">${renderHtml(data.summary)}</div>\n\n`;
 
             // Technical Skills
-            html += `<span class="section">TECHNICAL SKILLS</span>\n`;
-            html += '----------------\n';
-            html += `<span class="subsection">Core Technologies:</span> ${data.technicalSkills.coreTechnologies}\n\n`;
-            html += `<span class="subsection">Engine Systems:</span> ${data.technicalSkills.engineSystems}\n\n`;
-            html += `<span class="subsection">Unreal Engine Expertise:</span> ${data.technicalSkills.unrealEngineExpertise}\n\n`;
-            html += `<span class="subsection">Optimization:</span> ${data.technicalSkills.optimization}\n\n`;
-            html += `<span class="subsection">Engineering Infrastructure & DevOps:</span> ${data.technicalSkills.engineeringInfrastructure}\n\n`;
-            html += `<span class="subsection">Systems & Infrastructure:</span> ${data.technicalSkills.systemsInfrastructure}\n\n`;
-            html += `<span class="subsection">Additional:</span> ${data.technicalSkills.additional}\n\n`;
+            html += `<span class="section">${u.skillsHeading}</span>\n`;
+            html += `${rule(u.skillsHeading)}\n`;
+            Object.keys(u.skillLabels).forEach(key => {
+                html += `<span class="subsection">${u.skillLabels[key]}:</span> ${data.technicalSkills[key]}\n\n`;
+            });
 
             // Professional Experience
-            html += `<span class="section">PROFESSIONAL EXPERIENCE</span>\n`;
-            html += '-----------------------\n<div class="experience-section">';
+            html += `<span class="section">${u.experienceHeading}</span>\n`;
+            html += `${rule(u.experienceHeading)}\n<div class="experience-section">`;
             data.experience.forEach(job => {
                 html += `<span class="job">[${job.period}] ${job.company}</span> | <span class="jobtitle">${job.title}</span>\n`;
                 if (job.description) {
@@ -508,8 +884,8 @@ const cvData = {
             html += '</div>';
 
             // Education & Teaching Experience
-            html += `<span class="section">EDUCATION & TEACHING EXPERIENCE</span>\n`;
-            html += '-------------------------------\n';
+            html += `<span class="section">${u.educationHeading}</span>\n`;
+            html += `${rule(u.educationHeading)}\n`;
             html += `<span class="subsection">${data.education.degree}</span> | ${data.education.institution} | ${data.education.period}\n\n`;
             
             data.teachingExperience.forEach(teaching => {
@@ -520,16 +896,16 @@ const cvData = {
             });
 
             // Community Involvement
-            html += `<span class="section">COMMUNITY INVOLVEMENT & RECOGNITION</span>\n`;
-            html += '-----------------------------------\n';
+            html += `<span class="section">${u.communityHeading}</span>\n`;
+            html += `${rule(u.communityHeading)}\n`;
             data.communityInvolvement.forEach(item => {
                 html += `${renderHtml(item)}\n`;
             });
             html += '\n';
 
             // Languages
-            html += `<span class="section">LANGUAGES</span>\n`;
-            html += '---------\n';
+            html += `<span class="section">${u.languagesHeading}</span>\n`;
+            html += `${rule(u.languagesHeading)}\n`;
             html += `${data.languages}\n`;
 
             return wrapDragons(html);
@@ -546,6 +922,36 @@ const cvData = {
             }
         }
 
+        // Language switching — swaps the active dataset, then re-renders in place
+        function setCvLang(lang) {
+            if (!CV_BY_LANG[lang]) return;
+            cvLang = lang;
+            cvData = CV_BY_LANG[lang];
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.setAttribute('aria-pressed', String(btn.classList.contains('lang-' + lang)));
+            });
+
+            try {
+                localStorage.setItem('cvLang', lang);
+            } catch (e) {
+                // storage blocked (private mode) — the switch still works for this visit
+            }
+
+            loadCV();
+        }
+
+        function initCvLang() {
+            let stored = null;
+            try {
+                stored = localStorage.getItem('cvLang');
+            } catch (e) {
+                stored = null;
+            }
+            setCvLang(CV_BY_LANG[stored] ? stored : 'en');
+        }
+
         // Toggle handler
         function toggleLolcat(ev) {
             if (ev && ev.preventDefault) ev.preventDefault();
@@ -554,9 +960,9 @@ const cvData = {
 
         // Load CV when page is ready (cv-data.js loads first, so cvData will be available)
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadCV);
+            document.addEventListener('DOMContentLoaded', initCvLang);
         } else {
-            loadCV();
+            initCvLang();
         }
 
         // Toggle lolcat mode by clicking the unicorn overlay
@@ -728,16 +1134,25 @@ const cvData = {
                 });
             }
 
+            // Capturing listeners on document also fire for document itself and for text
+            // nodes, neither of which has closest() — resolve to a real element first.
+            const closestLink = (e) => {
+                let node = e.target;
+                if (node && node.nodeType === 3) node = node.parentElement;
+                if (!node || typeof node.closest !== 'function') return null;
+                return node.closest('a[href*="youtube.com"], a[href*="youtu.be"]');
+            };
+
             // Handle YouTube links in content
             document.addEventListener('mouseenter', (e) => {
-                const link = e.target.closest('a[href*="youtube.com"], a[href*="youtu.be"]');
+                const link = closestLink(e);
                 if (link && !link.closest('.action-btn')) {
                     showPreview(link, link.href);
                 }
             }, true);
 
             document.addEventListener('mouseleave', (e) => {
-                const link = e.target.closest('a[href*="youtube.com"], a[href*="youtu.be"]');
+                const link = closestLink(e);
                 if (link && !link.closest('.action-btn')) {
                     hidePreview();
                 }
@@ -1052,13 +1467,16 @@ const cvData = {
             if (cvData.personalInfo.nationality) write(cvData.personalInfo.nationality);
             y += lineHeight;
 
-            write('PROFESSIONAL SUMMARY', {color: [196, 181, 253], bold: true});
-            write('--------------------');
+            const u = cvData.ui;
+            const rule = (heading) => '-'.repeat(heading.length);
+
+            write(u.summaryHeading, {color: [196, 181, 253], bold: true});
+            write(rule(u.summaryHeading));
             write(cvData.summary);
             y += lineHeight;
 
-            write('TECHNICAL SKILLS', {color: [196, 181, 253], bold: true});
-            write('----------------');
+            write(u.skillsHeading, {color: [196, 181, 253], bold: true});
+            write(rule(u.skillsHeading));
 
             const writeSkill = (label, content) => {
                 if (y + lineHeight > H - pad) newPage();
@@ -1081,19 +1499,15 @@ const cvData = {
                 y += 0;
             };
 
-            writeSkill('Core Technologies', cvData.technicalSkills.coreTechnologies);
-            writeSkill('Engine Systems', cvData.technicalSkills.engineSystems);
-            writeSkill('Unreal Engine Expertise', cvData.technicalSkills.unrealEngineExpertise);
-            writeSkill('Optimization', cvData.technicalSkills.optimization);
-            writeSkill('Engineering Infrastructure & DevOps', cvData.technicalSkills.engineeringInfrastructure);
-            writeSkill('Systems & Infrastructure', cvData.technicalSkills.systemsInfrastructure);
-            writeSkill('Additional', cvData.technicalSkills.additional);
+            Object.keys(u.skillLabels).forEach(key => {
+                writeSkill(u.skillLabels[key], cvData.technicalSkills[key]);
+            });
             y += lineHeight;
 
             if (y + lineHeight * 4 > H - pad) newPage();
 
-            write('PROFESSIONAL EXPERIENCE', {color: [196, 181, 253], bold: true});
-            write('-----------------------');
+            write(u.experienceHeading, {color: [196, 181, 253], bold: true});
+            write(rule(u.experienceHeading));
             cvData.experience.forEach(job => {
                 write(`[${job.period}] ${job.company} | ${job.title}`, {color: [249, 168, 212], bold: true});
                 if (job.description) {
@@ -1104,8 +1518,8 @@ const cvData = {
                 y += lineHeight;
             });
 
-            write('EDUCATION & TEACHING EXPERIENCE', {color: [196, 181, 253], bold: true});
-            write('-------------------------------');
+            write(u.educationHeading, {color: [196, 181, 253], bold: true});
+            write(rule(u.educationHeading));
             write(`${cvData.education.degree} | ${cvData.education.institution} | ${cvData.education.period}`, {color: [249, 168, 212], bold: true});
             y += lineHeight;
             cvData.teachingExperience.forEach(t => {
@@ -1114,15 +1528,15 @@ const cvData = {
                 y += 7;
             });
 
-            write('COMMUNITY INVOLVEMENT & RECOGNITION', {color: [196, 181, 253], bold: true});
-            write('-----------------------------------');
+            write(u.communityHeading, {color: [196, 181, 253], bold: true});
+            write(rule(u.communityHeading));
             cvData.communityInvolvement.forEach(i => write(i));
             y += lineHeight;
 
             if (y + lineHeight * 4 > H - pad) newPage();
 
-            write('LANGUAGES', {color: [196, 181, 253], bold: true});
-            write('---------');
+            write(u.languagesHeading, {color: [196, 181, 253], bold: true});
+            write(rule(u.languagesHeading));
             write(cvData.languages);
 
             return pdf;
@@ -1134,7 +1548,7 @@ const cvData = {
                 alert('PDF generation failed');
                 return;
             }
-            pdf.save('CV_Erika_Dorado_Senior_Cpp.pdf');
+            pdf.save(cvData.ui.pdfName);
         }
 
         async function sharePDF() {
@@ -1150,7 +1564,7 @@ const cvData = {
             }
 
             const pdfBlob = pdf.output('blob');
-            const file = new File([pdfBlob], 'CV_Erika_Dorado_Senior_Cpp.pdf', { type: 'application/pdf' });
+            const file = new File([pdfBlob], cvData.ui.pdfName, { type: 'application/pdf' });
 
             if (navigator.canShare && !navigator.canShare({ files: [file] })) {
                 alert('Sharing PDF files is not supported on this device. Use the download button instead.');
@@ -1160,8 +1574,8 @@ const cvData = {
             try {
                 await navigator.share({
                     files: [file],
-                    title: 'CV - Erika Dorado',
-                    text: 'Check out my CV!'
+                    title: cvData.ui.shareTitle,
+                    text: cvData.ui.shareText
                 });
             } catch (err) {
                 if (err.name !== 'AbortError') {
@@ -1176,6 +1590,8 @@ const cvData = {
 (function(){
   try {
     if (typeof renderCV !== 'function' || typeof cvData === 'undefined') return;
+    // Pick up the stored language first so there is no flash of English
+    if (typeof initCvLang === 'function') initCvLang();
     var fullHtml = renderCV(cvData);
     var el = document.getElementById('cv-output');
     if (!el) return;
