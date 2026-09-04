@@ -148,7 +148,8 @@
             justify-content: center;
         }
 
-        .game-btn {
+        .game-btn,
+        .earth-btn {
             font-size: 16px;
             line-height: 1;
             padding: 0;
@@ -253,6 +254,22 @@
         .game-close:hover {
             background-color: #40c4ff;
             color: #012456;
+        }
+
+        /* Sits over the bottom of the canvas so the simulation keeps the whole
+           frame; pointer-events off or it would eat the drag. */
+        .earth-readout {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px 14px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #8fa6c9;
+            white-space: pre-wrap;
+            pointer-events: none;
         }
 
         .game-status {
@@ -500,6 +517,7 @@
         <button class="action-btn unicorn-btn" type="button" onclick="toggleLolcat(event)" data-html2canvas-ignore="true" aria-label="Toggle rainbow mode">🐉</button>
         <button class="action-btn game-btn" type="button" onclick="openGame('mahjong')" data-html2canvas-ignore="true" aria-label="Play mahjong solitaire">🎮</button>
         <button class="action-btn game-btn" type="button" onclick="openGame('catdiner')" data-html2canvas-ignore="true" aria-label="Play cat diner">🍜</button>
+        <button class="action-btn earth-btn" type="button" onclick="openEarth()" data-html2canvas-ignore="true" aria-label="Three-body simulation">🌍</button>
         <span class="divider" aria-hidden="true"></span>
         <button class="action-btn lang-btn lang-en" type="button" onclick="setCvLang('en')" data-html2canvas-ignore="true" aria-pressed="true" aria-label="English">[ENG]</button>
         <button class="action-btn lang-btn lang-es" type="button" onclick="setCvLang('es')" data-html2canvas-ignore="true" aria-pressed="false" aria-label="Español">[ESP]</button>
@@ -529,6 +547,18 @@
             </div>
             <canvas id="catdiner-canvas" class="game-canvas" tabindex="0"></canvas>
             <div id="catdiner-status" class="game-status">opening the kitchen...</div>
+        </div>
+    </div>
+
+    <div id="earth-modal" class="game-modal" aria-hidden="true" data-html2canvas-ignore="true">
+        <div class="game-frame">
+            <div class="game-titlebar">
+                <span class="prompt">erika@cv:~$</span><span class="command">./three-body --figure-eight --verlet</span>
+                <button class="game-close" type="button" onclick="closeEarth()" aria-label="Close simulation">[esc]</button>
+            </div>
+            <canvas id="earth-canvas" class="game-canvas" tabindex="0"></canvas>
+            <div id="earth-status" class="game-status"></div>
+            <div id="earth-readout" class="earth-readout">drag a body to break the orbit &middot; [r] reset</div>
         </div>
     </div>
 
@@ -633,7 +663,440 @@ var CatDinerModule=(()=>{var _scriptName=globalThis.document?.currentScript?.src
                 const modal = document.getElementById(key + '-modal');
                 if (modal && modal.classList.contains('open')) closeGame(key);
             });
+            const earthModal = document.getElementById('earth-modal');
+            if (earthModal && earthModal.classList.contains('open')) closeEarth();
         });
+
+        /* Three-body problem, integrated on the CPU and drawn in WebGL.
+
+           The initial state is the Chenciner-Montgomery figure eight: three
+           equal masses chasing each other around the same closed curve. It is
+           an exact periodic solution, so any wobble on screen is integrator
+           error, not physics - which is what makes it worth watching. Drag a
+           body and the three-body chaos takes over immediately. */
+        const EARTH_G = 1;
+        const EARTH_SOFTEN = 1e-8;
+        const EARTH_DT = 1 / 1200;
+        const EARTH_SUBSTEPS = 24;
+        const EARTH_TRAIL = 900;
+        const EARTH_VIEW = 1.75;
+
+        const EARTH_COLORS = [
+            [0.25, 0.77, 1.00],
+            [0.77, 0.71, 0.99],
+            [1.00, 0.83, 0.47]
+        ];
+
+        const earth = {
+            gl: null,
+            raf: 0,
+            last: 0,
+            time: 0,
+            pos: null,
+            vel: null,
+            acc: null,
+            mass: null,
+            energy0: 0,
+            trail: null,
+            head: 0,
+            seq: 0,
+            drag: -1,
+            dragPos: [0, 0],
+            dragPrev: [0, 0],
+            failed: false
+        };
+
+        function earthReset() {
+            /* Chenciner-Montgomery, G = m = 1, period 6.32591398. */
+            const x = 0.97000436, y = -0.24308753;
+            const vx = 0.93240737, vy = 0.86473146;
+
+            earth.pos = new Float64Array([x, y, -x, -y, 0, 0]);
+            earth.vel = new Float64Array([vx / 2, vy / 2, vx / 2, vy / 2, -vx, -vy]);
+            earth.acc = new Float64Array(6);
+            earth.mass = new Float64Array([1, 1, 1]);
+            earth.time = 0;
+            earth.drag = -1;
+            earth.seq = 0;
+            earth.head = 0;
+
+            /* Two floats of position plus the sequence number the trail shader
+               fades on, per point, per body. */
+            earth.trail = [0, 1, 2].map(() => new Float32Array(EARTH_TRAIL * 3));
+            for (let b = 0; b < 3; b++) {
+                for (let i = 0; i < EARTH_TRAIL; i++) {
+                    earth.trail[b][i * 3] = earth.pos[b * 2];
+                    earth.trail[b][i * 3 + 1] = earth.pos[b * 2 + 1];
+                    earth.trail[b][i * 3 + 2] = -EARTH_TRAIL;
+                }
+            }
+
+            earthAccel();
+            earth.energy0 = earthEnergy();
+        }
+
+        function earthAccel() {
+            const p = earth.pos, a = earth.acc, m = earth.mass;
+            a.fill(0);
+            for (let i = 0; i < 3; i++) {
+                for (let j = i + 1; j < 3; j++) {
+                    const dx = p[j * 2] - p[i * 2];
+                    const dy = p[j * 2 + 1] - p[i * 2 + 1];
+                    const r2 = dx * dx + dy * dy + EARTH_SOFTEN;
+                    const inv = EARTH_G / (r2 * Math.sqrt(r2));
+                    a[i * 2] += dx * inv * m[j];
+                    a[i * 2 + 1] += dy * inv * m[j];
+                    a[j * 2] -= dx * inv * m[i];
+                    a[j * 2 + 1] -= dy * inv * m[i];
+                }
+            }
+        }
+
+        function earthEnergy() {
+            const p = earth.pos, v = earth.vel, m = earth.mass;
+            let e = 0;
+            for (let i = 0; i < 3; i++) {
+                e += 0.5 * m[i] * (v[i * 2] * v[i * 2] + v[i * 2 + 1] * v[i * 2 + 1]);
+                for (let j = i + 1; j < 3; j++) {
+                    const dx = p[j * 2] - p[i * 2];
+                    const dy = p[j * 2 + 1] - p[i * 2 + 1];
+                    e -= EARTH_G * m[i] * m[j] / Math.sqrt(dx * dx + dy * dy + EARTH_SOFTEN);
+                }
+            }
+            return e;
+        }
+
+        function earthAngularMomentum() {
+            const p = earth.pos, v = earth.vel, m = earth.mass;
+            let l = 0;
+            for (let i = 0; i < 3; i++) {
+                l += m[i] * (p[i * 2] * v[i * 2 + 1] - p[i * 2 + 1] * v[i * 2]);
+            }
+            return l;
+        }
+
+        /* Velocity Verlet: symplectic, so the energy error stays bounded
+           instead of drifting the way plain Euler would. */
+        function earthStep(dt) {
+            const p = earth.pos, v = earth.vel, a = earth.acc;
+            const half = dt * 0.5;
+            for (let k = 0; k < 6; k++) {
+                v[k] += a[k] * half;
+                p[k] += v[k] * dt;
+            }
+            earthAccel();
+            for (let k = 0; k < 6; k++) v[k] += a[k] * half;
+            earth.time += dt;
+        }
+
+        function earthPushTrail() {
+            const head = earth.head;
+            earth.seq += 1;
+            for (let b = 0; b < 3; b++) {
+                const t = earth.trail[b];
+                t[head * 3] = earth.pos[b * 2];
+                t[head * 3 + 1] = earth.pos[b * 2 + 1];
+                t[head * 3 + 2] = earth.seq;
+            }
+            earth.head = (head + 1) % EARTH_TRAIL;
+        }
+
+        function earthShader(gl, type, src) {
+            const sh = gl.createShader(type);
+            gl.shaderSource(sh, src);
+            gl.compileShader(sh);
+            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                console.error('three-body shader', gl.getShaderInfoLog(sh));
+                return null;
+            }
+            return sh;
+        }
+
+        function earthProgram(gl, vsSrc, fsSrc) {
+            const vs = earthShader(gl, gl.VERTEX_SHADER, vsSrc);
+            const fs = earthShader(gl, gl.FRAGMENT_SHADER, fsSrc);
+            if (!vs || !fs) return null;
+            const prog = gl.createProgram();
+            gl.attachShader(prog, vs);
+            gl.attachShader(prog, fs);
+            gl.linkProgram(prog);
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+                console.error('three-body link', gl.getProgramInfoLog(prog));
+                return null;
+            }
+            return prog;
+        }
+
+        function earthInitGL(canvas) {
+            const gl = canvas.getContext('webgl', {
+                alpha: true,
+                antialias: true,
+                premultipliedAlpha: true
+            });
+            if (!gl) return null;
+
+            const trailProg = earthProgram(gl,
+                'attribute vec2 aPos;' +
+                'attribute float aSeq;' +
+                'uniform vec2 uScale;' +
+                'uniform float uHead;' +
+                'varying float vFade;' +
+                'void main() {' +
+                '  vFade = clamp(1.0 - (uHead - aSeq) / ' + EARTH_TRAIL + '.0, 0.0, 1.0);' +
+                '  gl_Position = vec4(aPos * uScale, 0.0, 1.0);' +
+                '}',
+                'precision mediump float;' +
+                'uniform vec3 uColor;' +
+                'varying float vFade;' +
+                'void main() {' +
+                '  float a = vFade * vFade * 0.85;' +
+                '  gl_FragColor = vec4(uColor * a, a);' +
+                '}');
+
+            const bodyProg = earthProgram(gl,
+                'attribute vec2 aPos;' +
+                'uniform vec2 uScale;' +
+                'uniform float uSize;' +
+                'void main() {' +
+                '  gl_Position = vec4(aPos * uScale, 0.0, 1.0);' +
+                '  gl_PointSize = uSize;' +
+                '}',
+                'precision mediump float;' +
+                'uniform vec3 uColor;' +
+                'void main() {' +
+                '  float r = length(gl_PointCoord - vec2(0.5)) * 2.0;' +
+                '  float core = smoothstep(1.0, 0.0, r);' +
+                '  float a = core * core * core;' +
+                '  gl_FragColor = vec4(uColor * a, a);' +
+                '}');
+
+            if (!trailProg || !bodyProg) return null;
+
+            const ctx = {
+                gl: gl,
+                trailProg: trailProg,
+                bodyProg: bodyProg,
+                trailBuf: [0, 1, 2].map(() => gl.createBuffer()),
+                bodyBuf: gl.createBuffer(),
+                loc: {
+                    tPos: gl.getAttribLocation(trailProg, 'aPos'),
+                    tSeq: gl.getAttribLocation(trailProg, 'aSeq'),
+                    tScale: gl.getUniformLocation(trailProg, 'uScale'),
+                    tHead: gl.getUniformLocation(trailProg, 'uHead'),
+                    tColor: gl.getUniformLocation(trailProg, 'uColor'),
+                    bPos: gl.getAttribLocation(bodyProg, 'aPos'),
+                    bScale: gl.getUniformLocation(bodyProg, 'uScale'),
+                    bSize: gl.getUniformLocation(bodyProg, 'uSize'),
+                    bColor: gl.getUniformLocation(bodyProg, 'uColor')
+                }
+            };
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            return ctx;
+        }
+
+        function earthDraw() {
+            const ctx = earth.gl;
+            const gl = ctx.gl;
+            const canvas = gl.canvas;
+
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+            const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+            if (canvas.width !== w || canvas.height !== h) {
+                canvas.width = w;
+                canvas.height = h;
+            }
+            gl.viewport(0, 0, w, h);
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const aspect = w / h;
+            const scale = aspect >= 1
+                ? [1 / (EARTH_VIEW * aspect), 1 / EARTH_VIEW]
+                : [1 / EARTH_VIEW, aspect / EARTH_VIEW];
+            earth.scale = scale;
+
+            gl.useProgram(ctx.trailProg);
+            gl.uniform2f(ctx.loc.tScale, scale[0], scale[1]);
+            gl.uniform1f(ctx.loc.tHead, earth.seq);
+            gl.enableVertexAttribArray(ctx.loc.tPos);
+            gl.enableVertexAttribArray(ctx.loc.tSeq);
+
+            for (let b = 0; b < 3; b++) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, ctx.trailBuf[b]);
+                gl.bufferData(gl.ARRAY_BUFFER, earth.trail[b], gl.DYNAMIC_DRAW);
+                gl.vertexAttribPointer(ctx.loc.tPos, 2, gl.FLOAT, false, 12, 0);
+                gl.vertexAttribPointer(ctx.loc.tSeq, 1, gl.FLOAT, false, 12, 8);
+                gl.uniform3fv(ctx.loc.tColor, EARTH_COLORS[b]);
+
+                /* Ring buffer: drawing one strip across the wrap would draw a
+                   chord from the newest point back to the oldest. */
+                const head = earth.head;
+                if (head > 1) gl.drawArrays(gl.LINE_STRIP, 0, head);
+                if (EARTH_TRAIL - head > 1) gl.drawArrays(gl.LINE_STRIP, head, EARTH_TRAIL - head);
+            }
+
+            gl.disableVertexAttribArray(ctx.loc.tSeq);
+
+            const bodies = new Float32Array(6);
+            for (let k = 0; k < 6; k++) bodies[k] = earth.pos[k];
+
+            gl.useProgram(ctx.bodyProg);
+            gl.uniform2f(ctx.loc.bScale, scale[0], scale[1]);
+            gl.uniform1f(ctx.loc.bSize, Math.max(12, Math.min(48, h * 0.05)));
+            gl.bindBuffer(gl.ARRAY_BUFFER, ctx.bodyBuf);
+            gl.bufferData(gl.ARRAY_BUFFER, bodies, gl.DYNAMIC_DRAW);
+            gl.enableVertexAttribArray(ctx.loc.bPos);
+            gl.vertexAttribPointer(ctx.loc.bPos, 2, gl.FLOAT, false, 8, 0);
+            for (let b = 0; b < 3; b++) {
+                gl.uniform3fv(ctx.loc.bColor, EARTH_COLORS[b]);
+                gl.drawArrays(gl.POINTS, b, 1);
+            }
+        }
+
+        function earthReadout() {
+            const el = document.getElementById('earth-readout');
+            if (!el) return;
+            const e = earthEnergy();
+            const drift = Math.abs(e - earth.energy0);
+            el.textContent =
+                't ' + earth.time.toFixed(2) +
+                '   E ' + e.toFixed(6) +
+                '   dE ' + drift.toExponential(1) +
+                '   L ' + earthAngularMomentum().toFixed(6) +
+                '   verlet dt ' + EARTH_DT.toExponential(1) +
+                '\ndrag a body to break the orbit · [r] reset';
+        }
+
+        function earthFrame(now) {
+            if (!earth.last) earth.last = now;
+            const wall = Math.min(0.05, (now - earth.last) / 1000);
+            earth.last = now;
+
+            const steps = Math.max(1, Math.round(EARTH_SUBSTEPS * wall * 60));
+            for (let s = 0; s < steps; s++) {
+                earthStep(EARTH_DT);
+                if (earth.drag >= 0) {
+                    /* A held body is kinematic: the pointer owns it, and the
+                       other two feel it through the same gravity term. */
+                    const b = earth.drag;
+                    earth.pos[b * 2] = earth.dragPos[0];
+                    earth.pos[b * 2 + 1] = earth.dragPos[1];
+                    earth.vel[b * 2] = 0;
+                    earth.vel[b * 2 + 1] = 0;
+                    earthAccel();
+                }
+            }
+            earthPushTrail();
+            earthDraw();
+            earthReadout();
+
+            earth.raf = requestAnimationFrame(earthFrame);
+        }
+
+        function earthPointerWorld(ev) {
+            const canvas = document.getElementById('earth-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const nx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+            const ny = 1 - ((ev.clientY - rect.top) / rect.height) * 2;
+            const scale = earth.scale || [1 / EARTH_VIEW, 1 / EARTH_VIEW];
+            return [nx / scale[0], ny / scale[1]];
+        }
+
+        function earthBindInput(canvas) {
+            if (canvas.dataset.earthBound) return;
+            canvas.dataset.earthBound = '1';
+
+            canvas.addEventListener('pointerdown', (ev) => {
+                const p = earthPointerWorld(ev);
+                let best = -1, bestD = 0.22 * 0.22;
+                for (let b = 0; b < 3; b++) {
+                    const dx = p[0] - earth.pos[b * 2];
+                    const dy = p[1] - earth.pos[b * 2 + 1];
+                    const d = dx * dx + dy * dy;
+                    if (d < bestD) { bestD = d; best = b; }
+                }
+                if (best < 0) return;
+                earth.drag = best;
+                earth.dragPos = p;
+                earth.dragPrev = p;
+                canvas.setPointerCapture(ev.pointerId);
+                ev.preventDefault();
+            });
+
+            canvas.addEventListener('pointermove', (ev) => {
+                if (earth.drag < 0) return;
+                earth.dragPrev = earth.dragPos;
+                earth.dragPos = earthPointerWorld(ev);
+                ev.preventDefault();
+            });
+
+            const release = (ev) => {
+                if (earth.drag < 0) return;
+                const b = earth.drag;
+                /* Throw it: the last pointer step becomes the new velocity,
+                   clamped so a flick cannot fling a body off the view. */
+                const vx = (earth.dragPos[0] - earth.dragPrev[0]) * 30;
+                const vy = (earth.dragPos[1] - earth.dragPrev[1]) * 30;
+                const speed = Math.hypot(vx, vy);
+                const cap = speed > 2 ? 2 / speed : 1;
+                earth.vel[b * 2] = vx * cap;
+                earth.vel[b * 2 + 1] = vy * cap;
+                earth.drag = -1;
+                earthAccel();
+                earth.energy0 = earthEnergy();
+                if (ev.pointerId !== undefined && canvas.hasPointerCapture(ev.pointerId)) {
+                    canvas.releasePointerCapture(ev.pointerId);
+                }
+            };
+            canvas.addEventListener('pointerup', release);
+            canvas.addEventListener('pointercancel', release);
+
+            canvas.addEventListener('keydown', (ev) => {
+                if (ev.key === 'r' || ev.key === 'R') {
+                    earthReset();
+                    ev.preventDefault();
+                }
+            });
+        }
+
+        function openEarth() {
+            const modal = document.getElementById('earth-modal');
+            const canvas = document.getElementById('earth-canvas');
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            canvas.focus();
+
+            if (earth.failed) return;
+
+            if (!earth.gl) {
+                earth.gl = earthInitGL(canvas);
+                if (!earth.gl) {
+                    earth.failed = true;
+                    setGameStatus('earth', 'this browser has no WebGL');
+                    return;
+                }
+                earthReset();
+                earthBindInput(canvas);
+            }
+
+            if (!earth.raf) {
+                earth.last = 0;
+                earth.raf = requestAnimationFrame(earthFrame);
+            }
+        }
+
+        function closeEarth() {
+            const modal = document.getElementById('earth-modal');
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            if (earth.raf) {
+                cancelAnimationFrame(earth.raf);
+                earth.raf = 0;
+            }
+        }
     </script>
 
     <script>
