@@ -149,7 +149,8 @@
         }
 
         .game-btn,
-        .earth-btn {
+        .earth-btn,
+        .chess-btn {
             font-size: 16px;
             line-height: 1;
             padding: 0;
@@ -270,6 +271,184 @@
             color: #8fa6c9;
             white-space: pre-wrap;
             pointer-events: none;
+        }
+
+        /* Chess. The board and the dragoness are a 3D scene in WebGL, and the
+           same 64 squares exist a second time as focusable gridcells projected
+           onto the board through the same camera. A canvas has nothing in it
+           for a screen reader to read, so the pixels and the semantics are two
+           layers of one board instead of one layer only sighted players get -
+           and if WebGL is missing the grid drops back to a flat 8x8 it paints
+           itself, and the game carries on. */
+        .chess-stage {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        .chess-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+        }
+
+        .chess-grid {
+            position: absolute;
+            inset: 0;
+        }
+
+        .chess-row {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        /* Placed and clipped by chessProjectGrid() to the projected quad of its
+           own square, so a click lands on the square it looks like it landed
+           on even at the far end of the board. */
+        .chess-square {
+            position: absolute;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Thick and light: it lands on a dark board, over a piece, and it is
+           what survives forced-colours mode and the flat fallback. */
+        .chess-square:focus-visible {
+            outline: 3px solid #ffffff;
+            outline-offset: -2px;
+        }
+
+        .chess-glyph {
+            display: none;
+            line-height: 1;
+        }
+
+        .chess-coord {
+            display: none;
+        }
+
+        /* No WebGL: the grid stops projecting and lays itself out flat. */
+        .chess-grid.flat {
+            display: grid;
+            grid-template-rows: repeat(8, 1fr);
+            inset: 4%;
+        }
+
+        .chess-grid.flat .chess-row {
+            position: static;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            pointer-events: auto;
+        }
+
+        .chess-grid.flat .chess-square {
+            position: static;
+            clip-path: none;
+            background: #12303c;
+        }
+
+        .chess-grid.flat .chess-square.light { background: #1d4a5c; }
+        .chess-grid.flat .chess-square.mine { color: #f6e7c8; }
+        .chess-grid.flat .chess-square.hers { color: #2ee6c8; }
+        .chess-grid.flat .chess-square.sel,
+        .chess-grid.flat .chess-square.target { box-shadow: inset 0 0 0 3px #f6c177; }
+        .chess-grid.flat .chess-glyph { display: block; font-size: min(5.5vh, 5.5vw); }
+
+        .chess-promo {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: rgba(1, 24, 34, 0.86);
+        }
+
+        .chess-promo[hidden] { display: none; }
+
+        .chess-promo-title {
+            margin: 0;
+            color: #8fe6dc;
+            font-size: 16px;
+        }
+
+        .chess-promo-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .chess-bar {
+            flex: 0 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 4px 14px;
+            padding: 6px 14px 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chess-live {
+            flex: 1 1 260px;
+            margin: 0;
+            min-width: 0;
+            color: #c4b5fd;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .chess-readout {
+            flex: 0 0 auto;
+            margin: 0;
+            color: #8fa6c9;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .chess-controls {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chess-ctl,
+        .chess-promo-row button {
+            padding: 2px 8px;
+            background: transparent;
+            border: 1px solid #2ee6c8;
+            border-radius: 4px;
+            color: #2ee6c8;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .chess-ctl:hover,
+        .chess-promo-row button:hover,
+        .chess-ctl:focus-visible,
+        .chess-promo-row button:focus-visible {
+            background-color: #2ee6c8;
+            color: #012456;
+        }
+
+        @media (max-width: 768px) {
+            .chess-bar { font-size: 13px; }
+            .chess-readout { display: none; }
         }
 
         .game-status {
@@ -518,6 +697,7 @@
         <button class="action-btn game-btn" type="button" onclick="openGame('mahjong')" data-html2canvas-ignore="true" aria-label="Play mahjong solitaire">🎮</button>
         <button class="action-btn game-btn" type="button" onclick="openGame('catdiner')" data-html2canvas-ignore="true" aria-label="Play cat diner">🍜</button>
         <button class="action-btn earth-btn" type="button" onclick="openEarth()" data-html2canvas-ignore="true" aria-label="Three-body simulation">🌍</button>
+        <button class="action-btn chess-btn" type="button" onclick="openChess()" data-html2canvas-ignore="true" aria-label="Play chess against the dragoness">&#9822;</button>
         <span class="divider" aria-hidden="true"></span>
         <button class="action-btn lang-btn lang-en" type="button" onclick="setCvLang('en')" data-html2canvas-ignore="true" aria-pressed="true" aria-label="English">[ENG]</button>
         <button class="action-btn lang-btn lang-es" type="button" onclick="setCvLang('es')" data-html2canvas-ignore="true" aria-pressed="false" aria-label="Español">[ESP]</button>
@@ -559,6 +739,36 @@
             <canvas id="earth-canvas" class="game-canvas" tabindex="0"></canvas>
             <div id="earth-status" class="game-status"></div>
             <div id="earth-readout" class="earth-readout">drag a body to break the orbit &middot; [r] reset</div>
+        </div>
+    </div>
+
+    <div id="chess-modal" class="game-modal" aria-hidden="true" data-html2canvas-ignore="true">
+        <div class="game-frame" role="dialog" aria-modal="true" aria-label="Chess against the dragoness">
+            <div class="game-titlebar">
+                <span class="prompt">erika@cv:~$</span><span class="command">./chess --opponent dragoness --webgl</span>
+                <button class="game-close" type="button" onclick="closeChess()" aria-label="Close chess">[esc]</button>
+            </div>
+            <div class="chess-stage" id="chess-stage">
+                <canvas id="chess-canvas" class="chess-canvas" aria-hidden="true"></canvas>
+                <div id="chess-grid" class="chess-grid" role="grid" aria-label="Chess board. You play the cream pieces from the near side, the dragoness plays turquoise. Arrow keys move, enter selects."></div>
+                <div id="chess-promo" class="chess-promo" role="dialog" aria-modal="true" aria-label="Choose a promotion piece" hidden>
+                    <p class="chess-promo-title">promote to</p>
+                    <div class="chess-promo-row">
+                        <button type="button" data-promo="5">queen</button>
+                        <button type="button" data-promo="4">rook</button>
+                        <button type="button" data-promo="3">bishop</button>
+                        <button type="button" data-promo="2">knight</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chess-bar">
+                <p id="chess-live" class="chess-live" role="status" aria-live="polite"></p>
+                <p id="chess-readout" class="chess-readout"></p>
+                <div class="chess-controls">
+                    <button type="button" class="chess-ctl" onclick="chessNewGame(true)">new game <span aria-hidden="true">[n]</span></button>
+                    <button type="button" class="chess-ctl" onclick="chessToggleFlip()">flip <span aria-hidden="true">[f]</span></button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -665,6 +875,8 @@ var CatDinerModule=(()=>{var _scriptName=globalThis.document?.currentScript?.src
             });
             const earthModal = document.getElementById('earth-modal');
             if (earthModal && earthModal.classList.contains('open')) closeEarth();
+            const chessModal = document.getElementById('chess-modal');
+            if (chessModal && chessModal.classList.contains('open')) closeChess();
         });
 
         /* Three-body problem, integrated on the CPU and drawn in WebGL.
@@ -1891,6 +2103,2063 @@ let cvData = cvDataEN;
             document.addEventListener('DOMContentLoaded', setupLinkPreviews);
         } else {
             setupLinkPreviews();
+        }
+
+
+        /* Chess against the dragoness.
+
+           Two layers, one board. The board, the pieces and the dragoness who
+           sits across from you are a 3D scene in WebGL; every square also
+           exists as a real focusable gridcell, projected through the same
+           camera so it lands exactly on the square it looks like it lands on.
+           A canvas has nothing in it for a screen reader to read, so the
+           semantics live in the grid and both layers are driven from one state:
+           keyboard play is the same game, not a reduced one.
+
+           She is negamax with alpha-beta over a 64-square Int8Array, iteratively
+           deepened inside a time budget, with a captures-only quiescence search
+           so she stops counting material halfway through a trade. */
+        const CHESS_VALUE = [0, 100, 320, 330, 500, 900, 20000];
+        const CHESS_NAME = ['', 'pawn', 'knight', 'bishop', 'rook', 'queen', 'king'];
+        const CHESS_FILES = 'abcdefgh';
+        const CHESS_GLYPHS = ['', '♙', '♘', '♗', '♖', '♕', '♔'];
+        const CHESS_GLYPHS_DARK = ['', '♟', '♞', '♝', '♜', '♛', '♚'];
+        const CHESS_BUDGET_MS = 650;
+        const CHESS_MAX_DEPTH = 5;
+
+        const CHESS_KNIGHT_D = [[1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1], [-2, 1], [-1, 2]];
+        const CHESS_DIAG_D = [[1, 1], [1, -1], [-1, -1], [-1, 1]];
+        const CHESS_ORTHO_D = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        const CHESS_KING_D = CHESS_DIAG_D.concat(CHESS_ORTHO_D);
+
+        /* Piece-square tables, written from white's point of view with a1
+           first. The dragoness reads them mirrored (sq ^ 56). */
+        const CHESS_PST = [
+            null,
+            [0, 0, 0, 0, 0, 0, 0, 0,
+                5, 10, 10, -20, -20, 10, 10, 5,
+                5, -5, -10, 0, 0, -10, -5, 5,
+                0, 0, 0, 20, 20, 0, 0, 0,
+                5, 5, 10, 25, 25, 10, 5, 5,
+                10, 10, 20, 30, 30, 20, 10, 10,
+                50, 50, 50, 50, 50, 50, 50, 50,
+                0, 0, 0, 0, 0, 0, 0, 0],
+            [-50, -40, -30, -30, -30, -30, -40, -50,
+                -40, -20, 0, 5, 5, 0, -20, -40,
+                -30, 5, 10, 15, 15, 10, 5, -30,
+                -30, 0, 15, 20, 20, 15, 0, -30,
+                -30, 5, 15, 20, 20, 15, 5, -30,
+                -30, 0, 10, 15, 15, 10, 0, -30,
+                -40, -20, 0, 0, 0, 0, -20, -40,
+                -50, -40, -30, -30, -30, -30, -40, -50],
+            [-20, -10, -10, -10, -10, -10, -10, -20,
+                -10, 5, 0, 0, 0, 0, 5, -10,
+                -10, 10, 10, 10, 10, 10, 10, -10,
+                -10, 0, 10, 10, 10, 10, 0, -10,
+                -10, 5, 5, 10, 10, 5, 5, -10,
+                -10, 0, 5, 10, 10, 5, 0, -10,
+                -10, 0, 0, 0, 0, 0, 0, -10,
+                -20, -10, -10, -10, -10, -10, -10, -20],
+            [0, 0, 0, 5, 5, 0, 0, 0,
+                -5, 0, 0, 0, 0, 0, 0, -5,
+                -5, 0, 0, 0, 0, 0, 0, -5,
+                -5, 0, 0, 0, 0, 0, 0, -5,
+                -5, 0, 0, 0, 0, 0, 0, -5,
+                -5, 0, 0, 0, 0, 0, 0, -5,
+                5, 10, 10, 10, 10, 10, 10, 5,
+                0, 0, 0, 0, 0, 0, 0, 0],
+            [-20, -10, -10, -5, -5, -10, -10, -20,
+                -10, 0, 5, 0, 0, 0, 0, -10,
+                -10, 5, 5, 5, 5, 5, 0, -10,
+                0, 0, 5, 5, 5, 5, 0, -5,
+                -5, 0, 5, 5, 5, 5, 0, -5,
+                -10, 0, 5, 5, 5, 5, 0, -10,
+                -10, 0, 0, 0, 0, 0, 0, -10,
+                -20, -10, -10, -5, -5, -10, -10, -20],
+            [20, 30, 10, 0, 0, 10, 30, 20,
+                20, 20, 0, 0, 0, 0, 20, 20,
+                -10, -20, -20, -20, -20, -20, -20, -10,
+                -20, -30, -30, -40, -40, -30, -30, -20,
+                -30, -40, -40, -50, -50, -40, -40, -30,
+                -30, -40, -40, -50, -50, -40, -40, -30,
+                -30, -40, -40, -50, -50, -40, -40, -30,
+                -30, -40, -40, -50, -50, -40, -40, -30]
+        ];
+
+        const chess = {
+            board: new Int8Array(64),
+            side: 1,
+            castle: 15,
+            ep: -1,
+            half: 0,
+            full: 1,
+            stack: [],
+            reps: new Map(),
+            sel: -1,
+            targets: [],
+            focus: 12,
+            flip: false,
+            over: '',
+            thinking: false,
+            lastMove: null,
+            promoPending: null,
+            promoReturn: -1,
+            gl: null,
+            failed: false,
+            built: false,
+            opener: null,
+            nodes: 0,
+            deadline: 0,
+            aborted: false,
+            lastDepth: 0,
+            raf: 0,
+            clock: 0,
+            last: 0,
+            mood: 'idle',
+            moodUntil: 0,
+            blink: 0,
+            calm: false
+        };
+
+        function chessSq(file, rank) { return rank * 8 + file; }
+        function chessFile(sq) { return sq & 7; }
+        function chessRank(sq) { return sq >> 3; }
+        function chessNameOf(sq) { return CHESS_FILES[chessFile(sq)] + (chessRank(sq) + 1); }
+        function chessSideName(side) { return side === 1 ? 'white' : 'dragoness'; }
+
+        function chessReset() {
+            const back = [4, 2, 3, 5, 6, 3, 2, 4];
+            chess.board.fill(0);
+            for (let f = 0; f < 8; f++) {
+                chess.board[chessSq(f, 0)] = back[f];
+                chess.board[chessSq(f, 1)] = 1;
+                chess.board[chessSq(f, 6)] = -1;
+                chess.board[chessSq(f, 7)] = -back[f];
+            }
+            chess.side = 1;
+            chess.castle = 15;
+            chess.ep = -1;
+            chess.half = 0;
+            chess.full = 1;
+            chess.stack.length = 0;
+            chess.reps.clear();
+            chess.sel = -1;
+            chess.targets = [];
+            chess.over = '';
+            chess.lastMove = null;
+            chess.thinking = false;
+            chess.promoPending = null;
+            chess.lastDepth = 0;
+            chessMood('idle', 0);
+            chess.reps.set(chessKey(), 1);
+        }
+
+        function chessKey() {
+            let k = '';
+            for (let i = 0; i < 64; i++) k += String.fromCharCode(65 + chess.board[i] + 6);
+            return k + '|' + chess.side + '|' + chess.castle + '|' + chess.ep;
+        }
+
+        /* ---- attacks and move generation ---- */
+
+        function chessAttacked(sq, by) {
+            const f = chessFile(sq), r = chessRank(sq);
+
+            /* A pawn of `by` attacks upward for white and downward for her, so
+               it sits one rank behind the square it hits. */
+            const pr = r - by;
+            if (pr >= 0 && pr < 8) {
+                for (const df of [-1, 1]) {
+                    const pf = f + df;
+                    if (pf < 0 || pf > 7) continue;
+                    if (chess.board[chessSq(pf, pr)] === by) return true;
+                }
+            }
+
+            for (const d of CHESS_KNIGHT_D) {
+                const nf = f + d[0], nr = r + d[1];
+                if (nf < 0 || nf > 7 || nr < 0 || nr > 7) continue;
+                if (chess.board[chessSq(nf, nr)] === by * 2) return true;
+            }
+
+            for (const d of CHESS_KING_D) {
+                const nf = f + d[0], nr = r + d[1];
+                if (nf < 0 || nf > 7 || nr < 0 || nr > 7) continue;
+                if (chess.board[chessSq(nf, nr)] === by * 6) return true;
+            }
+
+            for (let i = 0; i < 8; i++) {
+                const d = i < 4 ? CHESS_DIAG_D[i] : CHESS_ORTHO_D[i - 4];
+                const far = i < 4 ? 3 : 4;
+                let nf = f + d[0], nr = r + d[1];
+                while (nf >= 0 && nf < 8 && nr >= 0 && nr < 8) {
+                    const p = chess.board[chessSq(nf, nr)];
+                    if (p !== 0) {
+                        const abs = Math.abs(p);
+                        if (Math.sign(p) === by && (abs === far || abs === 5)) return true;
+                        break;
+                    }
+                    nf += d[0];
+                    nr += d[1];
+                }
+            }
+            return false;
+        }
+
+        function chessKingSquare(side) {
+            for (let i = 0; i < 64; i++) if (chess.board[i] === side * 6) return i;
+            return -1;
+        }
+
+        function chessInCheck(side) {
+            const k = chessKingSquare(side);
+            return k >= 0 && chessAttacked(k, -side);
+        }
+
+        function chessSlide(moves, from, dirs, capturesOnly) {
+            const f = chessFile(from), r = chessRank(from);
+            const side = Math.sign(chess.board[from]);
+            for (const d of dirs) {
+                let nf = f + d[0], nr = r + d[1];
+                while (nf >= 0 && nf < 8 && nr >= 0 && nr < 8) {
+                    const to = chessSq(nf, nr);
+                    const p = chess.board[to];
+                    if (p === 0) {
+                        if (!capturesOnly) moves.push({ from: from, to: to, promo: 0, ep: false, castle: 0 });
+                    } else {
+                        if (Math.sign(p) !== side) moves.push({ from: from, to: to, promo: 0, ep: false, castle: 0 });
+                        break;
+                    }
+                    nf += d[0];
+                    nr += d[1];
+                }
+            }
+        }
+
+        function chessStep(moves, from, dirs, capturesOnly) {
+            const f = chessFile(from), r = chessRank(from);
+            const side = Math.sign(chess.board[from]);
+            for (const d of dirs) {
+                const nf = f + d[0], nr = r + d[1];
+                if (nf < 0 || nf > 7 || nr < 0 || nr > 7) continue;
+                const to = chessSq(nf, nr);
+                const p = chess.board[to];
+                if (p === 0) {
+                    if (!capturesOnly) moves.push({ from: from, to: to, promo: 0, ep: false, castle: 0 });
+                } else if (Math.sign(p) !== side) {
+                    moves.push({ from: from, to: to, promo: 0, ep: false, castle: 0 });
+                }
+            }
+        }
+
+        function chessPawnMoves(moves, from, side, capturesOnly) {
+            const f = chessFile(from), r = chessRank(from);
+            const last = side === 1 ? 7 : 0;
+            const home = side === 1 ? 1 : 6;
+            const one = r + side;
+
+            const push = (to, promoting) => {
+                if (promoting) {
+                    for (const promo of [5, 4, 3, 2]) moves.push({ from: from, to: to, promo: promo, ep: false, castle: 0 });
+                } else {
+                    moves.push({ from: from, to: to, promo: 0, ep: false, castle: 0 });
+                }
+            };
+
+            if (one >= 0 && one < 8 && chess.board[chessSq(f, one)] === 0) {
+                if (!capturesOnly || one === last) push(chessSq(f, one), one === last);
+                const two = r + side * 2;
+                if (!capturesOnly && r === home && chess.board[chessSq(f, two)] === 0) push(chessSq(f, two), false);
+            }
+
+            for (const df of [-1, 1]) {
+                const nf = f + df;
+                if (nf < 0 || nf > 7 || one < 0 || one > 7) continue;
+                const to = chessSq(nf, one);
+                const p = chess.board[to];
+                if (p !== 0 && Math.sign(p) !== side) {
+                    push(to, one === last);
+                } else if (p === 0 && to === chess.ep) {
+                    moves.push({ from: from, to: to, promo: 0, ep: true, castle: 0 });
+                }
+            }
+        }
+
+        function chessCastles(moves, side) {
+            const home = side === 1 ? 0 : 7;
+            const king = chessSq(4, home);
+            if (chess.board[king] !== side * 6) return;
+            if (chessAttacked(king, -side)) return;
+
+            const kingBit = side === 1 ? 1 : 4;
+            const queenBit = side === 1 ? 2 : 8;
+
+            if ((chess.castle & kingBit) &&
+                chess.board[chessSq(5, home)] === 0 &&
+                chess.board[chessSq(6, home)] === 0 &&
+                chess.board[chessSq(7, home)] === side * 4 &&
+                !chessAttacked(chessSq(5, home), -side)) {
+                moves.push({ from: king, to: chessSq(6, home), promo: 0, ep: false, castle: 1 });
+            }
+            if ((chess.castle & queenBit) &&
+                chess.board[chessSq(1, home)] === 0 &&
+                chess.board[chessSq(2, home)] === 0 &&
+                chess.board[chessSq(3, home)] === 0 &&
+                chess.board[chessSq(0, home)] === side * 4 &&
+                !chessAttacked(chessSq(3, home), -side)) {
+                moves.push({ from: king, to: chessSq(2, home), promo: 0, ep: false, castle: 2 });
+            }
+        }
+
+        function chessGenerate(side, capturesOnly) {
+            const moves = [];
+            for (let sq = 0; sq < 64; sq++) {
+                const p = chess.board[sq];
+                if (p === 0 || Math.sign(p) !== side) continue;
+                switch (Math.abs(p)) {
+                    case 1: chessPawnMoves(moves, sq, side, capturesOnly); break;
+                    case 2: chessStep(moves, sq, CHESS_KNIGHT_D, capturesOnly); break;
+                    case 3: chessSlide(moves, sq, CHESS_DIAG_D, capturesOnly); break;
+                    case 4: chessSlide(moves, sq, CHESS_ORTHO_D, capturesOnly); break;
+                    case 5: chessSlide(moves, sq, CHESS_KING_D, capturesOnly); break;
+                    case 6: chessStep(moves, sq, CHESS_KING_D, capturesOnly); break;
+                }
+            }
+            if (!capturesOnly) chessCastles(moves, side);
+            return moves;
+        }
+
+        function chessLegal(side) {
+            const out = [];
+            for (const m of chessGenerate(side, false)) {
+                chessMake(m);
+                if (!chessInCheck(side)) out.push(m);
+                chessUnmake();
+            }
+            return out;
+        }
+
+        /* ---- make / unmake ---- */
+
+        function chessMake(m) {
+            const piece = chess.board[m.from];
+            const side = Math.sign(piece);
+            const capSq = m.ep ? chessSq(chessFile(m.to), chessRank(m.from)) : m.to;
+            const captured = chess.board[capSq];
+
+            chess.stack.push({
+                move: m, captured: captured, capSq: capSq,
+                castle: chess.castle, ep: chess.ep, half: chess.half
+            });
+
+            chess.board[capSq] = 0;
+            chess.board[m.from] = 0;
+            chess.board[m.to] = m.promo ? side * m.promo : piece;
+
+            if (m.castle) {
+                const home = side === 1 ? 0 : 7;
+                const rookFrom = chessSq(m.castle === 1 ? 7 : 0, home);
+                const rookTo = chessSq(m.castle === 1 ? 5 : 3, home);
+                chess.board[rookTo] = chess.board[rookFrom];
+                chess.board[rookFrom] = 0;
+            }
+
+            /* Rights die when the king or a rook leaves home, and when a rook
+               is taken on its home square - the capture case is the one that is
+               easy to forget and shows up as an illegal castle ten moves on. */
+            if (Math.abs(piece) === 6) chess.castle &= side === 1 ? ~3 : ~12;
+            if (m.from === 0 || capSq === 0) chess.castle &= ~2;
+            if (m.from === 7 || capSq === 7) chess.castle &= ~1;
+            if (m.from === 56 || capSq === 56) chess.castle &= ~8;
+            if (m.from === 63 || capSq === 63) chess.castle &= ~4;
+
+            chess.ep = (Math.abs(piece) === 1 && Math.abs(chessRank(m.to) - chessRank(m.from)) === 2)
+                ? chessSq(chessFile(m.from), (chessRank(m.from) + chessRank(m.to)) / 2)
+                : -1;
+
+            chess.half = (Math.abs(piece) === 1 || captured !== 0) ? 0 : chess.half + 1;
+            if (side === -1) chess.full += 1;
+            chess.side = -side;
+        }
+
+        function chessUnmake() {
+            const st = chess.stack.pop();
+            if (!st) return;
+            const m = st.move;
+            const side = -chess.side;
+            const piece = chess.board[m.to];
+
+            chess.board[m.from] = m.promo ? side : piece;
+            chess.board[m.to] = 0;
+            chess.board[st.capSq] = st.captured;
+
+            if (m.castle) {
+                const home = side === 1 ? 0 : 7;
+                const rookFrom = chessSq(m.castle === 1 ? 7 : 0, home);
+                const rookTo = chessSq(m.castle === 1 ? 5 : 3, home);
+                chess.board[rookFrom] = chess.board[rookTo];
+                chess.board[rookTo] = 0;
+            }
+
+            chess.castle = st.castle;
+            chess.ep = st.ep;
+            chess.half = st.half;
+            if (side === -1) chess.full -= 1;
+            chess.side = side;
+        }
+
+        /* ---- evaluation and search ---- */
+
+        function chessEval() {
+            let score = 0;
+            for (let sq = 0; sq < 64; sq++) {
+                const p = chess.board[sq];
+                if (p === 0) continue;
+                const abs = Math.abs(p);
+                score += Math.sign(p) * (CHESS_VALUE[abs] + CHESS_PST[abs][p > 0 ? sq : sq ^ 56]);
+            }
+            return score * chess.side;
+        }
+
+        function chessOrder(moves) {
+            for (const m of moves) {
+                const victim = chess.board[m.to];
+                m.score = victim !== 0
+                    ? CHESS_VALUE[Math.abs(victim)] * 10 - CHESS_VALUE[Math.abs(chess.board[m.from])]
+                    : 0;
+                if (m.promo) m.score += CHESS_VALUE[m.promo];
+            }
+            moves.sort((a, b) => b.score - a.score);
+            return moves;
+        }
+
+        function chessTimeUp() {
+            if (chess.aborted) return true;
+            if ((chess.nodes & 511) === 0 && performance.now() > chess.deadline) chess.aborted = true;
+            return chess.aborted;
+        }
+
+        function chessQuiesce(alpha, beta) {
+            chess.nodes += 1;
+            if (chessTimeUp()) return alpha;
+
+            const stand = chessEval();
+            if (stand >= beta) return beta;
+            if (stand > alpha) alpha = stand;
+
+            const side = chess.side;
+            for (const m of chessOrder(chessGenerate(side, true))) {
+                chessMake(m);
+                if (chessInCheck(side)) { chessUnmake(); continue; }
+                const score = -chessQuiesce(-beta, -alpha);
+                chessUnmake();
+                if (chessTimeUp()) return alpha;
+                if (score >= beta) return beta;
+                if (score > alpha) alpha = score;
+            }
+            return alpha;
+        }
+
+        function chessNegamax(depth, alpha, beta, ply) {
+            chess.nodes += 1;
+            if (chessTimeUp()) return alpha;
+            if (chess.half >= 100) return 0;
+            if (depth <= 0) return chessQuiesce(alpha, beta);
+
+            const side = chess.side;
+            let any = false;
+
+            for (const m of chessOrder(chessGenerate(side, false))) {
+                chessMake(m);
+                if (chessInCheck(side)) { chessUnmake(); continue; }
+                any = true;
+                const score = -chessNegamax(depth - 1, -beta, -alpha, ply + 1);
+                chessUnmake();
+                if (chessTimeUp()) return alpha;
+                if (score >= beta) return beta;
+                if (score > alpha) alpha = score;
+            }
+
+            /* Mate scores count the ply, so she prefers the shorter mate and
+               the longer escape from one. */
+            if (!any) return chessInCheck(side) ? -100000 + ply : 0;
+            return alpha;
+        }
+
+        function chessThink() {
+            const side = chess.side;
+            const root = chessLegal(side);
+            if (!root.length) return null;
+
+            chess.nodes = 0;
+            chess.aborted = false;
+            chess.deadline = performance.now() + CHESS_BUDGET_MS;
+
+            let best = root[0];
+            let depth = 0;
+
+            for (let d = 1; d <= CHESS_MAX_DEPTH; d++) {
+                let localBest = null;
+                let alpha = -1000000;
+                for (const m of chessOrder(root.slice())) {
+                    chessMake(m);
+                    /* A whisker of noise between equal moves, so two games from
+                       the same position do not walk the same line. */
+                    const score = -chessNegamax(d - 1, -1000000, -alpha, 1) + (Math.random() * 6 - 3);
+                    chessUnmake();
+                    if (chess.aborted) break;
+                    if (!localBest || score > alpha) { alpha = score; localBest = m; }
+                }
+                if (chess.aborted) break;
+                best = localBest || best;
+                depth = d;
+                if (alpha > 90000) break;
+                if (performance.now() > chess.deadline - CHESS_BUDGET_MS * 0.35) break;
+            }
+
+            chess.lastDepth = depth;
+            return best;
+        }
+
+        /* ---- notation and outcome ---- */
+
+        function chessDescribe(m) {
+            if (m.castle) return 'castles ' + (m.castle === 1 ? 'kingside' : 'queenside');
+            const piece = Math.abs(chess.board[m.from]);
+            const captured = m.ep ? 1 : Math.abs(chess.board[m.to]);
+            let text = CHESS_NAME[piece] + ' ' + chessNameOf(m.from) +
+                (captured ? ' takes ' : ' to ') + chessNameOf(m.to);
+            if (m.ep) text += ' en passant';
+            if (m.promo) text += ', promotes to ' + CHESS_NAME[m.promo];
+            return text;
+        }
+
+        function chessOutcome() {
+            const side = chess.side;
+            if (!chessLegal(side).length) {
+                if (chessInCheck(side)) return side === 1 ? 'Checkmate. The dragoness wins.' : 'Checkmate. You win.';
+                return 'Stalemate. Draw.';
+            }
+            if (chess.half >= 100) return 'Draw by the fifty-move rule.';
+            if ((chess.reps.get(chessKey()) || 0) >= 3) return 'Draw by threefold repetition.';
+
+            /* Insufficient material: bare kings, or a lone minor that can never
+               force mate. */
+            let minors = 0, others = 0;
+            for (let sq = 0; sq < 64; sq++) {
+                const abs = Math.abs(chess.board[sq]);
+                if (abs === 0 || abs === 6) continue;
+                if (abs === 2 || abs === 3) minors += 1; else others += 1;
+            }
+            if (others === 0 && minors <= 1) return 'Draw. Neither side has mating material.';
+            return '';
+        }
+
+        /* ---- the accessible grid ---- */
+
+        function chessScreenRow(sq) { return chess.flip ? chessRank(sq) : 7 - chessRank(sq); }
+        function chessScreenCol(sq) { return chess.flip ? 7 - chessFile(sq) : chessFile(sq); }
+
+        function chessSquareFromScreen(row, col) {
+            return chessSq(chess.flip ? 7 - col : col, chess.flip ? row : 7 - row);
+        }
+
+        function chessBuildGrid() {
+            const grid = document.getElementById('chess-grid');
+            grid.textContent = '';
+            for (let row = 0; row < 8; row++) {
+                const rowEl = document.createElement('div');
+                rowEl.className = 'chess-row';
+                rowEl.setAttribute('role', 'row');
+                for (let col = 0; col < 8; col++) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'chess-square';
+                    btn.setAttribute('role', 'gridcell');
+                    btn.tabIndex = -1;
+                    const glyph = document.createElement('span');
+                    glyph.className = 'chess-glyph';
+                    glyph.setAttribute('aria-hidden', 'true');
+                    btn.appendChild(glyph);
+                    btn.addEventListener('click', () => chessActivate(Number(btn.dataset.sq)));
+                    btn.addEventListener('focus', () => { chess.focus = Number(btn.dataset.sq); });
+                    rowEl.appendChild(btn);
+                }
+                grid.appendChild(rowEl);
+            }
+            grid.addEventListener('keydown', chessGridKey);
+            chess.built = true;
+        }
+
+        function chessSquareEl(sq) {
+            const grid = document.getElementById('chess-grid');
+            const row = grid.children[chessScreenRow(sq)];
+            return row ? row.children[chessScreenCol(sq)] : null;
+        }
+
+        function chessSyncGrid() {
+            const grid = document.getElementById('chess-grid');
+            if (!grid) return;
+            const checkSide = chessInCheck(chess.side) ? chess.side : 0;
+
+            for (let sq = 0; sq < 64; sq++) {
+                const btn = grid.children[chessScreenRow(sq)].children[chessScreenCol(sq)];
+                const p = chess.board[sq];
+                const abs = Math.abs(p);
+                const side = Math.sign(p);
+
+                btn.dataset.sq = String(sq);
+                btn.tabIndex = sq === chess.focus ? 0 : -1;
+
+                let label = chessNameOf(sq) + ', ';
+                label += abs === 0 ? 'empty' : chessSideName(side) + ' ' + CHESS_NAME[abs];
+                if (sq === chess.sel) label += ', selected';
+                const target = chess.targets.find((m) => m.to === sq);
+                if (target) label += (abs === 0 && !target.ep) ? ', move here' : ', capture here';
+                if (abs === 6 && side === checkSide) label += ', in check';
+                btn.setAttribute('aria-label', label);
+
+                btn.children[0].textContent = abs === 0 ? ''
+                    : (side === 1 ? CHESS_GLYPHS[abs] : CHESS_GLYPHS_DARK[abs]);
+
+                btn.classList.toggle('light', (chessFile(sq) + chessRank(sq)) % 2 === 1);
+                btn.classList.toggle('mine', side === 1);
+                btn.classList.toggle('hers', side === -1);
+                btn.classList.toggle('sel', sq === chess.sel);
+                btn.classList.toggle('target', !!target);
+            }
+        }
+
+        function chessAnnounce(text) {
+            const el = document.getElementById('chess-live');
+            if (!el) return;
+            /* Clearing first makes a repeat of the same sentence announce
+               again, which matters when she answers a move with its mirror. */
+            el.textContent = '';
+            window.setTimeout(() => { el.textContent = text; }, 40);
+        }
+
+        function chessReadout() {
+            const el = document.getElementById('chess-readout');
+            if (!el) return;
+            el.textContent = chess.over
+                ? 'game over · [n] new game'
+                : 'move ' + chess.full + ' · ' + (chess.side === 1 ? 'your turn' : 'dragoness') +
+                  (chess.lastDepth ? ' · depth ' + chess.lastDepth : '') + ' · [n] new · [f] flip';
+        }
+
+        function chessGridKey(ev) {
+            if (chess.promoPending) return;
+            let row = chessScreenRow(chess.focus);
+            let col = chessScreenCol(chess.focus);
+            let moved = true;
+
+            switch (ev.key) {
+                case 'ArrowUp': row = Math.max(0, row - 1); break;
+                case 'ArrowDown': row = Math.min(7, row + 1); break;
+                case 'ArrowLeft': col = Math.max(0, col - 1); break;
+                case 'ArrowRight': col = Math.min(7, col + 1); break;
+                case 'Home': col = 0; if (ev.ctrlKey) row = 0; break;
+                case 'End': col = 7; if (ev.ctrlKey) row = 7; break;
+                default: moved = false;
+            }
+
+            if (moved) {
+                ev.preventDefault();
+                chessFocusSquare(chessSquareFromScreen(row, col));
+                return;
+            }
+
+            if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                ev.preventDefault();
+                chessActivate(chess.focus);
+                return;
+            }
+            if (ev.key === 'Escape' && chess.sel >= 0) {
+                /* Cancel the selection, not the game: the modal's own Escape
+                   handler must not see this one. */
+                ev.stopPropagation();
+                ev.preventDefault();
+                chess.sel = -1;
+                chess.targets = [];
+                chessSyncGrid();
+                chessAnnounce('Selection cleared.');
+                return;
+            }
+            if (ev.key === 'n' || ev.key === 'N') { ev.preventDefault(); chessNewGame(true); return; }
+            if (ev.key === 'f' || ev.key === 'F') { ev.preventDefault(); chessToggleFlip(); }
+        }
+
+        function chessFocusSquare(sq) {
+            chess.focus = sq;
+            chessSyncGrid();
+            const el = chessSquareEl(sq);
+            if (el) el.focus();
+        }
+
+        /* ---- playing ---- */
+
+        function chessMood(mood, ms) {
+            chess.mood = mood;
+            chess.moodUntil = ms ? chess.clock + ms : 0;
+        }
+
+        function chessActivate(sq) {
+            if (chess.over || chess.thinking || chess.promoPending) return;
+            if (chess.side !== 1) return;
+
+            const move = chess.targets.find((m) => m.to === sq);
+            if (move) {
+                const promos = chess.targets.filter((m) => m.to === sq && m.promo);
+                if (promos.length) { chessAskPromotion(promos); return; }
+                chessPlay(move);
+                return;
+            }
+
+            if (sq === chess.sel) {
+                chess.sel = -1;
+                chess.targets = [];
+                chessSyncGrid();
+                chessAnnounce('Selection cleared.');
+                return;
+            }
+
+            const piece = chess.board[sq];
+            if (piece === 0 || Math.sign(piece) !== 1) {
+                chess.sel = -1;
+                chess.targets = [];
+                chessSyncGrid();
+                chessAnnounce(piece === 0
+                    ? chessNameOf(sq) + ' is empty.'
+                    : chessNameOf(sq) + ' is her ' + CHESS_NAME[Math.abs(piece)] + '.');
+                return;
+            }
+
+            const moves = chessLegal(1).filter((m) => m.from === sq);
+            chess.sel = sq;
+            chess.targets = moves;
+            chessSyncGrid();
+
+            if (!moves.length) {
+                chessAnnounce(CHESS_NAME[Math.abs(piece)] + ' on ' + chessNameOf(sq) + ' has no legal moves.');
+                return;
+            }
+            const seen = [];
+            for (const m of moves) if (seen.indexOf(m.to) < 0) seen.push(m.to);
+            chessAnnounce('Selected ' + CHESS_NAME[Math.abs(piece)] + ' on ' + chessNameOf(sq) + '. ' +
+                seen.length + (seen.length === 1 ? ' move: ' : ' moves: ') +
+                seen.map(chessNameOf).join(', ') + '.');
+        }
+
+        function chessAskPromotion(moves) {
+            chess.promoPending = moves;
+            chess.promoReturn = chess.focus;
+            const promo = document.getElementById('chess-promo');
+            promo.hidden = false;
+            promo.querySelector('button').focus();
+        }
+
+        function chessFinishPromotion(promo) {
+            const moves = chess.promoPending;
+            chess.promoPending = null;
+            document.getElementById('chess-promo').hidden = true;
+            if (!moves) return;
+            chessPlay(moves.find((m) => m.promo === promo) || moves[0]);
+        }
+
+        function chessCancelPromotion() {
+            chess.promoPending = null;
+            document.getElementById('chess-promo').hidden = true;
+            chessFocusSquare(chess.promoReturn);
+            chessAnnounce('Promotion cancelled.');
+        }
+
+        function chessRecordPosition() {
+            const key = chessKey();
+            chess.reps.set(key, (chess.reps.get(key) || 0) + 1);
+        }
+
+        function chessPlay(move) {
+            const text = chessDescribe(move);
+            const took = move.ep || chess.board[move.to] !== 0;
+            chessMake(move);
+            chessRecordPosition();
+            chess.lastMove = move;
+            chess.sel = -1;
+            chess.targets = [];
+            chess.focus = move.to;
+
+            const outcome = chessOutcome();
+            const check = !outcome && chessInCheck(chess.side);
+            chess.over = outcome;
+
+            chessSyncGrid();
+            chessReadout();
+
+            let said = 'You: ' + text + '.';
+            if (check) said += ' Check.';
+            if (outcome) {
+                chessMood(outcome.indexOf('You win') >= 0 ? 'lost' : 'won', 0);
+                chessAnnounce(said + ' ' + outcome);
+                return;
+            }
+
+            chessMood(took || check ? 'startled' : 'thinking', took || check ? 0.9 : 0);
+            chessAnnounce(said + ' The dragoness is thinking.');
+            chess.thinking = true;
+            /* Yield first: the search blocks the thread, and the sentence above
+               has to reach the live region before it does. */
+            window.setTimeout(chessDragonessTurn, 90);
+        }
+
+        function chessDragonessTurn() {
+            const move = chessThink();
+            chess.thinking = false;
+            if (!move) return;
+
+            const text = chessDescribe(move);
+            const took = move.ep || chess.board[move.to] !== 0;
+            chessMake(move);
+            chessRecordPosition();
+            chess.lastMove = move;
+            chess.focus = move.to;
+
+            const outcome = chessOutcome();
+            const check = !outcome && chessInCheck(chess.side);
+            chess.over = outcome;
+
+            chessSyncGrid();
+            chessReadout();
+
+            let said = 'Dragoness: ' + text + '.';
+            if (check) said += ' You are in check.';
+            if (outcome) said += ' ' + outcome;
+
+            if (outcome) chessMood(outcome.indexOf('You win') >= 0 ? 'lost' : 'won', 0);
+            else chessMood(took || check ? 'pleased' : 'idle', took || check ? 1.4 : 0);
+            chessAnnounce(said);
+        }
+
+        function chessNewGame(announce) {
+            chessReset();
+            chess.focus = chess.flip ? 52 : 12;
+            if (!chess.built) chessBuildGrid();
+            chessSyncGrid();
+            chessReadout();
+            if (announce) chessAnnounce('New game. You are white and move first.');
+        }
+
+        function chessToggleFlip() {
+            chess.flip = !chess.flip;
+            chessSyncGrid();
+            chessProjectGrid();
+            const el = chessSquareEl(chess.focus);
+            if (el && document.getElementById('chess-modal').classList.contains('open')) el.focus();
+            chessAnnounce(chess.flip
+                ? 'Board flipped. You are looking from her side of the table.'
+                : 'Board flipped back. You are looking from your side.');
+        }
+
+        /* ---- open / close ---- */
+
+        function chessBindOnce() {
+            const promo = document.getElementById('chess-promo');
+            promo.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('button[data-promo]');
+                if (btn) chessFinishPromotion(Number(btn.dataset.promo));
+            });
+            promo.addEventListener('keydown', (ev) => {
+                if (ev.key !== 'Escape') return;
+                ev.stopPropagation();
+                ev.preventDefault();
+                chessCancelPromotion();
+            });
+
+            /* Keep Tab inside the dialog while it is open. */
+            document.getElementById('chess-modal').addEventListener('keydown', (ev) => {
+                if (ev.key !== 'Tab') return;
+                const scope = chess.promoPending
+                    ? document.getElementById('chess-promo')
+                    : document.getElementById('chess-modal');
+                const items = Array.prototype.filter.call(
+                    scope.querySelectorAll('button:not([tabindex="-1"])'),
+                    (el) => el.offsetParent !== null);
+                if (!items.length) return;
+                const first = items[0], last = items[items.length - 1];
+                if (ev.shiftKey && document.activeElement === first) {
+                    ev.preventDefault();
+                    last.focus();
+                } else if (!ev.shiftKey && document.activeElement === last) {
+                    ev.preventDefault();
+                    first.focus();
+                }
+            });
+
+            const stage = document.getElementById('chess-stage');
+            if (window.ResizeObserver) new ResizeObserver(chessLayout).observe(stage);
+            else window.addEventListener('resize', chessLayout);
+
+            chess.calm = window.matchMedia &&
+                window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        function openChess() {
+            const modal = document.getElementById('chess-modal');
+            chess.opener = document.activeElement;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+
+            if (!chess.built) {
+                chessBuildGrid();
+                chessBindOnce();
+                chessReset();
+                chess.focus = 12;
+            }
+
+            if (!chess.gl && !chess.failed) {
+                chess.gl = chessInitGL(document.getElementById('chess-canvas'));
+                if (!chess.gl) {
+                    chess.failed = true;
+                    document.getElementById('chess-grid').classList.add('flat');
+                    chessAnnounce('This browser has no WebGL, so the board is drawn as text. The game plays the same.');
+                }
+            }
+
+            chessLayout();
+            chessSyncGrid();
+            chessReadout();
+            if (chess.gl && !chess.raf) {
+                chess.last = 0;
+                chess.raf = requestAnimationFrame(chessFrame);
+            }
+            const el = chessSquareEl(chess.focus);
+            if (el) el.focus();
+        }
+
+        function closeChess() {
+            const modal = document.getElementById('chess-modal');
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            if (chess.raf) {
+                cancelAnimationFrame(chess.raf);
+                chess.raf = 0;
+            }
+            if (chess.promoPending) {
+                chess.promoPending = null;
+                document.getElementById('chess-promo').hidden = true;
+            }
+            if (chess.opener && chess.opener.focus) chess.opener.focus();
+        }
+
+        /* ---- the scene ----
+
+           The board and the pieces are generated 3D: surfaces of revolution
+           from hand-written profiles, lit and depth-sorted like any other
+           scene. Nothing is loaded, which is the only way to keep a page that
+           has to stay one self-contained file.
+
+           The dragoness is not a mesh. She was, for a while - a rig of lathes
+           and swept tubes - and procedural geometry turns out to be a terrible
+           instrument for a face: every pass landed somewhere between eldritch
+           and upholstered. She is painted instead, with 2D vector paths onto an
+           offscreen canvas, and stands in the scene as a camera-facing quad
+           behind the board. Beziers give real control over a silhouette; lathes
+           never will. The texture is repainted only when her expression
+           changes, and the quad breathes every frame. */
+
+        function m4() { return new Float32Array(16); }
+
+        function m4Identity(o) {
+            o[0] = 1; o[1] = 0; o[2] = 0; o[3] = 0;
+            o[4] = 0; o[5] = 1; o[6] = 0; o[7] = 0;
+            o[8] = 0; o[9] = 0; o[10] = 1; o[11] = 0;
+            o[12] = 0; o[13] = 0; o[14] = 0; o[15] = 1;
+            return o;
+        }
+
+        function m4Mul(out, a, b) {
+            for (let c = 0; c < 4; c++) {
+                const b0 = b[c * 4], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3];
+                out[c * 4] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+                out[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+                out[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+                out[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+            }
+            return out;
+        }
+
+        function m4Perspective(out, fovy, aspect, near, far) {
+            const f = 1 / Math.tan(fovy / 2);
+            m4Identity(out);
+            out[0] = f / aspect;
+            out[5] = f;
+            out[10] = (far + near) / (near - far);
+            out[11] = -1;
+            out[14] = (2 * far * near) / (near - far);
+            out[15] = 0;
+            return out;
+        }
+
+        function m4LookAt(out, eye, center, up) {
+            const zx = eye[0] - center[0], zy = eye[1] - center[1], zz = eye[2] - center[2];
+            const zl = Math.hypot(zx, zy, zz) || 1;
+            const z = [zx / zl, zy / zl, zz / zl];
+            const xx = up[1] * z[2] - up[2] * z[1];
+            const xy = up[2] * z[0] - up[0] * z[2];
+            const xz = up[0] * z[1] - up[1] * z[0];
+            const xl = Math.hypot(xx, xy, xz) || 1;
+            const x = [xx / xl, xy / xl, xz / xl];
+            const y = [z[1] * x[2] - z[2] * x[1], z[2] * x[0] - z[0] * x[2], z[0] * x[1] - z[1] * x[0]];
+
+            out[0] = x[0]; out[1] = y[0]; out[2] = z[0]; out[3] = 0;
+            out[4] = x[1]; out[5] = y[1]; out[6] = z[1]; out[7] = 0;
+            out[8] = x[2]; out[9] = y[2]; out[10] = z[2]; out[11] = 0;
+            out[12] = -(x[0] * eye[0] + x[1] * eye[1] + x[2] * eye[2]);
+            out[13] = -(y[0] * eye[0] + y[1] * eye[1] + y[2] * eye[2]);
+            out[14] = -(z[0] * eye[0] + z[1] * eye[1] + z[2] * eye[2]);
+            out[15] = 1;
+            return out;
+        }
+
+        /* translate * rotateY * rotateX * rotateZ * scale, which is every
+           transform this scene needs. */
+        function m4Compose(t, rx, ry, rz, s) {
+            const sx = Math.sin(rx), cx = Math.cos(rx);
+            const sy = Math.sin(ry), cy = Math.cos(ry);
+            const sz = Math.sin(rz), cz = Math.cos(rz);
+            const sc = Array.isArray(s) ? s : [s, s, s];
+
+            const r = [
+                cy * cz + sy * sx * sz, cx * sz, -sy * cz + cy * sx * sz,
+                -cy * sz + sy * sx * cz, cx * cz, sy * sz + cy * sx * cz,
+                sy * cx, -sx, cy * cx
+            ];
+
+            const o = m4();
+            o[0] = r[0] * sc[0]; o[1] = r[1] * sc[0]; o[2] = r[2] * sc[0]; o[3] = 0;
+            o[4] = r[3] * sc[1]; o[5] = r[4] * sc[1]; o[6] = r[5] * sc[1]; o[7] = 0;
+            o[8] = r[6] * sc[2]; o[9] = r[7] * sc[2]; o[10] = r[8] * sc[2]; o[11] = 0;
+            o[12] = t[0]; o[13] = t[1]; o[14] = t[2]; o[15] = 1;
+            return o;
+        }
+
+        function m4Project(m, x, y, z) {
+            const w = m[3] * x + m[7] * y + m[11] * z + m[15];
+            const iw = w === 0 ? 1 : 1 / w;
+            return [
+                (m[0] * x + m[4] * y + m[8] * z + m[12]) * iw,
+                (m[1] * x + m[5] * y + m[9] * z + m[13]) * iw
+            ];
+        }
+
+        /* ---- meshes ---- */
+
+        function meshMake() { return { pos: [], nrm: [], idx: [] }; }
+
+        function meshLathe(profile, seg) {
+            const m = meshMake();
+            const rows = profile.length;
+            for (let i = 0; i < rows; i++) {
+                const p = profile[i];
+                const prev = profile[Math.max(0, i - 1)];
+                const next = profile[Math.min(rows - 1, i + 1)];
+                let nr = next[1] - prev[1];
+                let ny = -(next[0] - prev[0]);
+                const nl = Math.hypot(nr, ny) || 1;
+                nr /= nl; ny /= nl;
+                for (let s = 0; s <= seg; s++) {
+                    const a = (s / seg) * Math.PI * 2;
+                    const ca = Math.cos(a), sa = Math.sin(a);
+                    m.pos.push(p[0] * ca, p[1], p[0] * sa);
+                    m.nrm.push(nr * ca, ny, nr * sa);
+                }
+            }
+            for (let i = 0; i < rows - 1; i++) {
+                for (let s = 0; s < seg; s++) {
+                    const a = i * (seg + 1) + s, b = a + seg + 1;
+                    m.idx.push(a, b, a + 1, a + 1, b, b + 1);
+                }
+            }
+            return m;
+        }
+
+        function meshSphere(r, seg, rings) {
+            const profile = [];
+            for (let i = 0; i <= rings; i++) {
+                const a = (i / rings) * Math.PI;
+                profile.push([Math.sin(a) * r, -Math.cos(a) * r]);
+            }
+            return meshLathe(profile, seg);
+        }
+
+        function meshBox(w, h, d) {
+            const m = meshMake();
+            const x = w / 2, y = h / 2, z = d / 2;
+            const faces = [
+                [[-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z], [0, 0, 1]],
+                [[x, -y, -z], [-x, -y, -z], [-x, y, -z], [x, y, -z], [0, 0, -1]],
+                [[x, -y, z], [x, -y, -z], [x, y, -z], [x, y, z], [1, 0, 0]],
+                [[-x, -y, -z], [-x, -y, z], [-x, y, z], [-x, y, -z], [-1, 0, 0]],
+                [[-x, y, z], [x, y, z], [x, y, -z], [-x, y, -z], [0, 1, 0]],
+                [[-x, -y, -z], [x, -y, -z], [x, -y, z], [-x, -y, z], [0, -1, 0]]
+            ];
+            for (const f of faces) {
+                const base = m.pos.length / 3;
+                for (let i = 0; i < 4; i++) {
+                    m.pos.push(f[i][0], f[i][1], f[i][2]);
+                    m.nrm.push(f[4][0], f[4][1], f[4][2]);
+                }
+                m.idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+            }
+            return m;
+        }
+
+        /* A unit quad on the ground plane, for the board and every marker. */
+        function meshQuadXZ() {
+            const m = meshMake();
+            m.pos.push(0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1);
+            m.nrm.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
+            m.idx.push(0, 2, 1, 1, 2, 3);
+            return m;
+        }
+
+        /* A unit quad standing up, for her. */
+        function meshQuadXY() {
+            const m = meshMake();
+            m.pos.push(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0);
+            m.nrm.push(0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1);
+            m.idx.push(0, 1, 2, 2, 1, 3);
+            return m;
+        }
+
+        function meshApply(mesh, mat) {
+            const out = meshMake();
+            for (let i = 0; i < mesh.pos.length; i += 3) {
+                const x = mesh.pos[i], y = mesh.pos[i + 1], z = mesh.pos[i + 2];
+                out.pos.push(
+                    mat[0] * x + mat[4] * y + mat[8] * z + mat[12],
+                    mat[1] * x + mat[5] * y + mat[9] * z + mat[13],
+                    mat[2] * x + mat[6] * y + mat[10] * z + mat[14]);
+                const nx = mesh.nrm[i], ny = mesh.nrm[i + 1], nz = mesh.nrm[i + 2];
+                const tx = mat[0] * nx + mat[4] * ny + mat[8] * nz;
+                const ty = mat[1] * nx + mat[5] * ny + mat[9] * nz;
+                const tz = mat[2] * nx + mat[6] * ny + mat[10] * nz;
+                const l = Math.hypot(tx, ty, tz) || 1;
+                out.nrm.push(tx / l, ty / l, tz / l);
+            }
+            out.idx = mesh.idx.slice();
+            return out;
+        }
+
+        function meshMerge(parts) {
+            const out = meshMake();
+            for (const p of parts) {
+                const base = out.pos.length / 3;
+                for (let i = 0; i < p.pos.length; i++) { out.pos.push(p.pos[i]); out.nrm.push(p.nrm[i]); }
+                for (const i of p.idx) out.idx.push(base + i);
+            }
+            return out;
+        }
+
+        function glUpload(gl, mesh) {
+            const n = mesh.pos.length / 3;
+            const data = new Float32Array(n * 6);
+            for (let i = 0; i < n; i++) {
+                data[i * 6] = mesh.pos[i * 3];
+                data[i * 6 + 1] = mesh.pos[i * 3 + 1];
+                data[i * 6 + 2] = mesh.pos[i * 3 + 2];
+                data[i * 6 + 3] = mesh.nrm[i * 3];
+                data[i * 6 + 4] = mesh.nrm[i * 3 + 1];
+                data[i * 6 + 5] = mesh.nrm[i * 3 + 2];
+            }
+            const vbo = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+            gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+            const ibo = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.idx), gl.STATIC_DRAW);
+            return { vbo: vbo, ibo: ibo, count: mesh.idx.length };
+        }
+
+        /* ---- the pieces ---- */
+
+        const CHESS_PROFILES = {
+            1: [[0, 0], [0.30, 0], [0.30, 0.05], [0.23, 0.09], [0.16, 0.14],
+                [0.125, 0.24], [0.11, 0.36], [0.16, 0.40], [0.185, 0.44],
+                [0.125, 0.47], [0.10, 0.50], [0, 0.50]],
+            2: [[0, 0], [0.30, 0], [0.30, 0.06], [0.24, 0.10], [0.19, 0.16],
+                [0.17, 0.30], [0, 0.30]],
+            3: [[0, 0], [0.30, 0], [0.30, 0.06], [0.24, 0.10], [0.18, 0.15],
+                [0.14, 0.32], [0.115, 0.52], [0.17, 0.56], [0.20, 0.60],
+                [0.13, 0.63], [0.10, 0.66], [0, 0.66]],
+            4: [[0, 0], [0.32, 0], [0.32, 0.06], [0.26, 0.11], [0.21, 0.16],
+                [0.19, 0.55], [0.24, 0.60], [0.27, 0.66], [0.27, 0.74],
+                [0.20, 0.74], [0, 0.74]],
+            5: [[0, 0], [0.33, 0], [0.33, 0.06], [0.26, 0.11], [0.20, 0.17],
+                [0.15, 0.35], [0.125, 0.62], [0.18, 0.66], [0.22, 0.70],
+                [0.26, 0.78], [0.24, 0.86], [0.14, 0.86], [0, 0.86]],
+            6: [[0, 0], [0.34, 0], [0.34, 0.06], [0.27, 0.11], [0.21, 0.17],
+                [0.16, 0.38], [0.13, 0.70], [0.19, 0.74], [0.23, 0.78],
+                [0.27, 0.86], [0.25, 0.94], [0.15, 0.94], [0, 0.94]]
+        };
+
+        function chessPieceMesh(kind) {
+            const parts = [meshLathe(CHESS_PROFILES[kind], 28)];
+
+            if (kind === 4) {
+                for (let i = 0; i < 6; i++) {
+                    const a = (i / 6) * Math.PI * 2;
+                    parts.push(meshApply(meshBox(0.10, 0.14, 0.10),
+                        m4Compose([Math.cos(a) * 0.225, 0.80, Math.sin(a) * 0.225], 0, -a, 0, 1)));
+                }
+            }
+
+            if (kind === 2) {
+                /* A knight has no axis to turn on, so hers is built: a neck
+                   raked forward off the base, a muzzle, ears and a cut mane. */
+                parts.push(meshApply(meshBox(0.20, 0.44, 0.17), m4Compose([0, 0.50, -0.03], -0.30, 0, 0, 1)));
+                parts.push(meshApply(meshBox(0.19, 0.17, 0.30), m4Compose([0, 0.75, 0.09], -0.12, 0, 0, 1)));
+                parts.push(meshApply(meshBox(0.13, 0.12, 0.15), m4Compose([0, 0.71, 0.25], -0.05, 0, 0, 1)));
+                for (const sx of [-1, 1]) {
+                    parts.push(meshApply(meshBox(0.055, 0.12, 0.05),
+                        m4Compose([sx * 0.065, 0.87, -0.03], -0.15, 0, sx * 0.2, 1)));
+                }
+                for (let i = 0; i < 3; i++) {
+                    parts.push(meshApply(meshBox(0.07, 0.13, 0.09),
+                        m4Compose([0, 0.80 - i * 0.12, -0.14 - i * 0.045], -0.35, 0, 0, 1)));
+                }
+            }
+
+            if (kind === 3) {
+                parts.push(meshApply(meshSphere(0.155, 22, 14), m4Compose([0, 0.76, 0], 0, 0, 0, 1)));
+                parts.push(meshApply(meshLathe([[0, 0], [0.055, 0], [0, 0.15]], 16), m4Compose([0, 0.88, 0], 0, 0, 0, 1)));
+            }
+
+            if (kind === 1) {
+                parts.push(meshApply(meshSphere(0.17, 22, 14), m4Compose([0, 0.60, 0], 0, 0, 0, 1)));
+            }
+
+            if (kind === 5 || kind === 6) {
+                const top = kind === 5 ? 0.90 : 0.98;
+                for (let i = 0; i < 8; i++) {
+                    const a = (i / 8) * Math.PI * 2;
+                    parts.push(meshApply(meshSphere(0.055, 14, 9),
+                        m4Compose([Math.cos(a) * 0.21, top, Math.sin(a) * 0.21], 0, 0, 0, 1)));
+                }
+                if (kind === 5) {
+                    parts.push(meshApply(meshSphere(0.075, 16, 10), m4Compose([0, 1.00, 0], 0, 0, 0, 1)));
+                } else {
+                    parts.push(meshApply(meshBox(0.055, 0.24, 0.055), m4Compose([0, 1.10, 0], 0, 0, 0, 1)));
+                    parts.push(meshApply(meshBox(0.17, 0.055, 0.055), m4Compose([0, 1.14, 0], 0, 0, 0, 1)));
+                }
+            }
+
+            return meshMerge(parts);
+        }
+
+        /* ---- the dragoness, painted ---- */
+
+        const PORTRAIT_W = 768;
+        const PORTRAIT_H = 1024;
+
+        const P_SKIN = '#46ccbd';
+        const P_SKIN_D = '#279c92';
+        const P_SKIN_L = '#7ce6d9';
+        const P_HAIR = '#171a24';
+        const P_HAIR_M = '#2b3145';
+        const P_HAIR_H = '#7c8cb8';
+        const P_DRESS = '#e8759b';
+        const P_DRESS_D = '#c25279';
+        const P_FUR = '#ffffff';
+        const P_FUR_D = '#dfe5f1';
+        const P_HORN = '#f2e7cd';
+        const P_HORN_D = '#c9b892';
+        const P_IRIS = '#ffb545';
+        const P_IRIS_D = '#e07a1c';
+        const P_INK = '#171a24';
+
+        function pEllipse(g, x, y, rx, ry, rot) {
+            g.beginPath();
+            g.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2);
+            g.fill();
+        }
+
+        /* One lock of hair: a tapered leaf from root to tip, bent by `bend`.
+           Painting a lock as a filled shape rather than a stroked line is what
+           lets it read as hair with weight instead of as wire. */
+        function pLock(g, x0, y0, x1, y1, width, bend) {
+            const mx = (x0 + x1) / 2 + bend;
+            const my = (y0 + y1) / 2;
+            g.beginPath();
+            g.moveTo(x0 - width / 2, y0);
+            g.quadraticCurveTo(mx - width * 0.62, my, x1, y1);
+            g.quadraticCurveTo(mx + width * 0.62, my, x0 + width / 2, y0);
+            g.closePath();
+            g.fill();
+        }
+
+        function chessPaintDragoness(g, pose) {
+            const W = PORTRAIT_W, H = PORTRAIT_H;
+            const cx = W / 2;
+            const look = pose.look * 26;
+            g.clearRect(0, 0, W, H);
+            g.lineJoin = 'round';
+            g.lineCap = 'round';
+
+            /* --- hair behind everything, one silhouette so the mass is solid
+                   and the locks are drawn into it rather than fanned out of
+                   it. Loose strands hanging in space was the whole reason the
+                   old rig read as tentacles. --- */
+            g.fillStyle = P_HAIR;
+            g.beginPath();
+            g.moveTo(cx, 118);
+            g.bezierCurveTo(cx - 214, 118, cx - 292, 296, cx - 300, 462);
+            g.bezierCurveTo(cx - 322, 628, cx - 356, 782, cx - 330, 916);
+            g.bezierCurveTo(cx - 322, 968, cx - 306, 992, cx - 296, H);
+            g.lineTo(cx + 296, H);
+            g.bezierCurveTo(cx + 306, 992, cx + 322, 968, cx + 330, 916);
+            g.bezierCurveTo(cx + 356, 782, cx + 322, 628, cx + 300, 462);
+            g.bezierCurveTo(cx + 292, 296, cx + 214, 118, cx, 118);
+            g.closePath();
+            g.fill();
+
+            /* Waves inside the mass: a few soft mid-tone locks, then two broad
+               sheen bands. Black hair is legible almost entirely by its sheen,
+               so the bands are doing most of the work. */
+            g.save();
+            g.clip();
+            g.fillStyle = P_HAIR_M;
+            for (let i = 0; i < 7; i++) {
+                const sx = i % 2 ? 1 : -1;
+                const t = Math.floor(i / 2) + (i % 2) * 0.5;
+                pLock(g, cx + sx * (150 + t * 52), 210 + t * 40,
+                    cx + sx * (238 + t * 40), 700 + t * 90, 74, sx * 62);
+            }
+            g.globalAlpha = 0.5;
+            g.fillStyle = P_HAIR_H;
+            pEllipse(g, cx - 196, 372, 128, 46, -0.44);
+            pEllipse(g, cx + 206, 386, 120, 42, 0.40);
+            g.globalAlpha = 0.28;
+            pEllipse(g, cx - 232, 640, 96, 132, -0.20);
+            pEllipse(g, cx + 244, 660, 88, 124, 0.18);
+            g.globalAlpha = 1;
+            g.restore();
+
+            /* --- the gown --- */
+            g.fillStyle = P_DRESS;
+            g.beginPath();
+            g.moveTo(cx - 150, 556);
+            g.bezierCurveTo(cx - 236, 586, cx - 262, 700, cx - 288, 860);
+            g.bezierCurveTo(cx - 306, 946, cx - 316, 986, cx - 322, H);
+            g.lineTo(cx + 322, H);
+            g.bezierCurveTo(cx + 316, 986, cx + 306, 946, cx + 288, 860);
+            g.bezierCurveTo(cx + 262, 700, cx + 236, 586, cx + 150, 556);
+            g.closePath();
+            g.fill();
+
+            g.save();
+            g.clip();
+            g.fillStyle = P_DRESS_D;
+            g.globalAlpha = 0.55;
+            pEllipse(g, cx - 250, 900, 120, 220, -0.15);
+            pEllipse(g, cx + 258, 916, 112, 210, 0.14);
+            g.globalAlpha = 0.4;
+            g.fillStyle = '#f8a8c2';
+            pEllipse(g, cx - 30, 800, 96, 250, 0.05);
+            g.globalAlpha = 1;
+            g.restore();
+
+            /* Fur as a scalloped run of circles, never a smooth band - a clean
+               white edge reads as piping, overlapping tufts read as fur. */
+            const furRun = (x0, y0, x1, y1, r, n) => {
+                for (let i = 0; i <= n; i++) {
+                    const t = i / n;
+                    const wob = 1 + 0.16 * Math.sin(i * 2.1);
+                    g.fillStyle = i % 2 ? P_FUR_D : P_FUR;
+                    g.beginPath();
+                    g.arc(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, r * wob, 0, Math.PI * 2);
+                    g.fill();
+                }
+            };
+            furRun(cx - 168, 566, cx - 46, 604, 28, 7);
+            furRun(cx - 46, 604, cx + 46, 604, 28, 5);
+            furRun(cx + 46, 604, cx + 168, 566, 28, 7);
+            furRun(cx - 300, 962, cx, 1006, 30, 12);
+            furRun(cx, 1006, cx + 300, 962, 30, 12);
+
+            /* --- neck and head --- */
+            /* Short and wide. The framing crops her above the collar, so this
+               is the one piece of her the viewer actually reads as anatomy,
+               and a long thin column of it looks like a stalk. */
+            g.fillStyle = P_SKIN_D;
+            g.beginPath();
+            g.moveTo(cx - 70, 456);
+            g.bezierCurveTo(cx - 76, 510, cx - 80, 544, cx - 86, 572);
+            g.lineTo(cx + 86, 572);
+            g.bezierCurveTo(cx + 80, 544, cx + 76, 510, cx + 70, 456);
+            g.closePath();
+            g.fill();
+
+            /* horns, behind the skull so they sit into the hair */
+            for (const sx of [-1, 1]) {
+                g.fillStyle = P_HORN;
+                g.beginPath();
+                g.moveTo(cx + sx * 96, 196);
+                g.bezierCurveTo(cx + sx * 190, 132, cx + sx * 268, 96, cx + sx * 320, 46);
+                g.bezierCurveTo(cx + sx * 286, 92, cx + sx * 206, 156, cx + sx * 132, 236);
+                g.closePath();
+                g.fill();
+                g.fillStyle = P_HORN_D;
+                g.globalAlpha = 0.45;
+                g.beginPath();
+                g.moveTo(cx + sx * 110, 214);
+                g.bezierCurveTo(cx + sx * 196, 152, cx + sx * 262, 112, cx + sx * 320, 46);
+                g.bezierCurveTo(cx + sx * 276, 108, cx + sx * 208, 168, cx + sx * 134, 234);
+                g.closePath();
+                g.fill();
+                g.globalAlpha = 1;
+            }
+
+            /* ear fins */
+            for (const sx of [-1, 1]) {
+                g.fillStyle = P_SKIN_D;
+                g.beginPath();
+                g.moveTo(cx + sx * 138, 300);
+                g.quadraticCurveTo(cx + sx * 250, 268, cx + sx * 286, 336);
+                g.quadraticCurveTo(cx + sx * 218, 348, cx + sx * 146, 340);
+                g.closePath();
+                g.fill();
+            }
+
+            g.fillStyle = P_SKIN;
+            pEllipse(g, cx, 296, 156, 150);
+            pEllipse(g, cx, 368, 92, 66);
+
+            g.fillStyle = P_SKIN_L;
+            g.globalAlpha = 0.55;
+            pEllipse(g, cx - 62, 250, 76, 54, -0.3);
+            g.globalAlpha = 0.5;
+            pEllipse(g, cx, 356, 66, 40);
+            g.globalAlpha = 1;
+
+            /* cheeks */
+            g.fillStyle = '#ff9ab4';
+            g.globalAlpha = 0.42;
+            pEllipse(g, cx - 116, 342, 40, 24);
+            pEllipse(g, cx + 116, 342, 40, 24);
+            g.globalAlpha = 1;
+
+            /* --- eyes --- */
+            for (const sx of [-1, 1]) {
+                const ex = cx + sx * 74 + look * 0.25;
+                const ey = 300;
+                const open = Math.max(0.06, pose.eye);
+
+                g.fillStyle = '#ffffff';
+                pEllipse(g, ex, ey, 50, 44 * open);
+
+                g.save();
+                g.beginPath();
+                g.ellipse(ex, ey, 50, 44 * open, 0, 0, Math.PI * 2);
+                g.clip();
+
+                g.fillStyle = P_IRIS;
+                pEllipse(g, ex + look * 0.5, ey + 2, 33, 33);
+                g.fillStyle = P_IRIS_D;
+                g.globalAlpha = 0.55;
+                pEllipse(g, ex + look * 0.5, ey + 14, 33, 20);
+                g.globalAlpha = 1;
+                g.fillStyle = P_INK;
+                pEllipse(g, ex + look * 0.5, ey + 2, 11, 26);
+                g.fillStyle = '#ffffff';
+                pEllipse(g, ex + look * 0.5 - 12, ey - 12, 11, 9, -0.4);
+                g.globalAlpha = 0.75;
+                pEllipse(g, ex + look * 0.5 + 13, ey + 12, 6, 5);
+                g.globalAlpha = 1;
+                g.restore();
+
+                /* Lid and lashes. The heavy upper line is what turns a bead
+                   into an eye. */
+                g.strokeStyle = P_INK;
+                g.lineWidth = 13;
+                g.beginPath();
+                g.moveTo(ex - 52, ey - 12 * open - 4);
+                g.quadraticCurveTo(ex, ey - 52 * open - 10, ex + 52, ey - 12 * open - 4);
+                g.stroke();
+
+                g.lineWidth = 8;
+                for (let k = 0; k < 3; k++) {
+                    const a = 0.35 + k * 0.30;
+                    g.beginPath();
+                    g.moveTo(ex + sx * (40 + k * 5), ey - 26 * open);
+                    g.quadraticCurveTo(
+                        ex + sx * (62 + k * 10), ey - 40 * open - 10,
+                        ex + sx * (78 + k * 14), ey - 44 * open - 6 - k * 8);
+                    g.stroke();
+                }
+
+                /* brow */
+                g.lineWidth = 10;
+                g.strokeStyle = P_HAIR_M;
+                const browLift = pose.brow * sx;
+                g.beginPath();
+                g.moveTo(ex - 44, ey - 74 + browLift);
+                g.quadraticCurveTo(ex, ey - 92 - pose.brow, ex + 46, ey - 70 - browLift);
+                g.stroke();
+            }
+
+            /* nostrils and mouth */
+            g.fillStyle = P_SKIN_D;
+            pEllipse(g, cx - 22, 352, 7, 5);
+            pEllipse(g, cx + 22, 352, 7, 5);
+
+            g.strokeStyle = P_SKIN_D;
+            g.lineWidth = 7;
+            g.beginPath();
+            if (pose.smile > 0) {
+                g.moveTo(cx - 40, 386);
+                g.quadraticCurveTo(cx, 386 + 26 * pose.smile, cx + 40, 386);
+            } else {
+                g.moveTo(cx - 34, 394);
+                g.quadraticCurveTo(cx, 394 + 10 * pose.smile, cx + 34, 394);
+            }
+            g.stroke();
+
+            /* --- the hair that sits in front: a fringe on the hairline and a
+                   lock down each side of the face --- */
+            g.fillStyle = P_HAIR;
+            g.beginPath();
+            g.moveTo(cx - 158, 268);
+            g.bezierCurveTo(cx - 168, 180, cx - 96, 128, cx, 126);
+            g.bezierCurveTo(cx + 96, 128, cx + 168, 180, cx + 158, 268);
+            g.bezierCurveTo(cx + 132, 214, cx + 96, 196, cx + 62, 226);
+            g.bezierCurveTo(cx + 30, 254, cx + 16, 250, cx - 4, 214);
+            g.bezierCurveTo(cx - 26, 250, cx - 62, 262, cx - 96, 232);
+            g.bezierCurveTo(cx - 122, 208, cx - 142, 220, cx - 158, 268);
+            g.closePath();
+            g.fill();
+
+            for (const sx of [-1, 1]) {
+                g.fillStyle = P_HAIR;
+                pLock(g, cx + sx * 150, 214, cx + sx * 196, 742, 92, sx * 54);
+                g.fillStyle = P_HAIR_M;
+                g.globalAlpha = 0.7;
+                pLock(g, cx + sx * 152, 232, cx + sx * 188, 690, 34, sx * 50);
+                g.globalAlpha = 1;
+            }
+
+            g.save();
+            g.globalAlpha = 0.55;
+            g.fillStyle = P_HAIR_H;
+            pEllipse(g, cx - 92, 186, 66, 20, -0.32);
+            pEllipse(g, cx + 96, 190, 60, 18, 0.30);
+            pEllipse(g, cx - 168, 400, 26, 96, -0.10);
+            pEllipse(g, cx + 176, 410, 24, 90, 0.09);
+            g.globalAlpha = 1;
+            g.restore();
+        }
+
+        function chessPortraitPose() {
+            const mood = chess.mood;
+            const pose = { look: 0, eye: 1, smile: 0.5, brow: 0 };
+            if (chess.lastMove) pose.look = -(chessFile(chess.lastMove.to) - 3.5) / 3.5;
+            if (mood === 'thinking') { pose.eye = 0.62; pose.smile = 0.12; pose.brow = 6; }
+            else if (mood === 'startled') { pose.eye = 1.25; pose.smile = 0.05; pose.brow = -10; }
+            else if (mood === 'pleased') { pose.eye = 0.55; pose.smile = 1.0; pose.brow = 2; }
+            else if (mood === 'won') { pose.eye = 0.8; pose.smile = 1.0; pose.brow = -4; }
+            else if (mood === 'lost') { pose.eye = 0.5; pose.smile = -0.6; pose.brow = 10; }
+            if (chess.blink > 0) pose.eye = 0.07;
+            return pose;
+        }
+
+        /* Repainting a 768x1024 canvas is a few milliseconds, so it happens
+           only when the expression actually changes; the quad keeps moving in
+           between. */
+        function chessUpdatePortrait() {
+            const ctx = chess.gl;
+            if (!ctx) return;
+            const pose = chessPortraitPose();
+            const key = [chess.mood, chess.blink > 0 ? 1 : 0, Math.round(pose.look * 6)].join(':');
+            if (key === ctx.portraitKey) return;
+            ctx.portraitKey = key;
+
+            const gl = ctx.gl;
+            chessPaintDragoness(ctx.paint, pose);
+            gl.bindTexture(gl.TEXTURE_2D, ctx.portrait);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ctx.paintCanvas);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        }
+
+        /* ---- programs ---- */
+
+        function chessShader(gl, type, src) {
+            const sh = gl.createShader(type);
+            gl.shaderSource(sh, src);
+            gl.compileShader(sh);
+            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                console.error('chess shader', gl.getShaderInfoLog(sh));
+                return null;
+            }
+            return sh;
+        }
+
+        function chessProgram(gl, vsSrc, fsSrc) {
+            const vs = chessShader(gl, gl.VERTEX_SHADER, vsSrc);
+            const fs = chessShader(gl, gl.FRAGMENT_SHADER, fsSrc);
+            if (!vs || !fs) return null;
+            const p = gl.createProgram();
+            gl.attachShader(p, vs);
+            gl.attachShader(p, fs);
+            gl.linkProgram(p);
+            if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+                console.error('chess link', gl.getProgramInfoLog(p));
+                return null;
+            }
+            return p;
+        }
+
+        function chessInitGL(canvas) {
+            const gl = canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: true, depth: true });
+            if (!gl) return null;
+
+            const litVS =
+                'attribute vec3 aPos;' +
+                'attribute vec3 aNormal;' +
+                'uniform mat4 uViewProj;' +
+                'uniform mat4 uModel;' +
+                'varying vec3 vN;' +
+                'varying vec3 vW;' +
+                'void main() {' +
+                '  vec4 w = uModel * vec4(aPos, 1.0);' +
+                '  vW = w.xyz;' +
+                '  vN = mat3(uModel) * aNormal;' +
+                '  gl_Position = uViewProj * w;' +
+                '}';
+
+            /* One key light, a cool fill from below so the underside of a piece
+               is never a black hole, and a turquoise rim that ties the set to
+               the board it stands on. */
+            const litFS =
+                'precision mediump float;' +
+                'varying vec3 vN;' +
+                'varying vec3 vW;' +
+                'uniform vec3 uColor;' +
+                'uniform vec3 uEye;' +
+                'uniform float uShine;' +
+                'void main() {' +
+                '  vec3 N = normalize(vN);' +
+                '  vec3 L = normalize(vec3(0.42, 0.86, 0.55));' +
+                '  vec3 V = normalize(uEye - vW);' +
+                '  vec3 H = normalize(L + V);' +
+                '  float diff = max(dot(N, L), 0.0);' +
+                '  float fill = max(dot(N, vec3(-0.4, -0.5, 0.3)), 0.0) * 0.16;' +
+                '  float spec = pow(max(dot(N, H), 0.0), 38.0) * uShine;' +
+                '  float rim = pow(1.0 - max(dot(N, V), 0.0), 2.6) * 0.20;' +
+                '  vec3 c = uColor * (0.22 + diff * 0.88 + fill) + vec3(spec) + vec3(0.16, 0.80, 0.74) * rim;' +
+                '  gl_FragColor = vec4(c, 1.0);' +
+                '}';
+
+            const flatVS =
+                'attribute vec3 aPos;' +
+                'uniform mat4 uViewProj;' +
+                'uniform mat4 uModel;' +
+                'varying vec2 vUV;' +
+                'void main() {' +
+                '  vUV = aPos.xz;' +
+                '  gl_Position = uViewProj * uModel * vec4(aPos, 1.0);' +
+                '}';
+
+            /* Markers are told apart by shape as much as by colour: a wash, a
+               dot, a ring and a soft blob for the shadow. */
+            const flatFS =
+                'precision mediump float;' +
+                'varying vec2 vUV;' +
+                'uniform vec3 uColor;' +
+                'uniform float uAlpha;' +
+                'uniform float uShape;' +
+                'void main() {' +
+                '  vec2 p = vUV - vec2(0.5);' +
+                '  float box = max(abs(p.x), abs(p.y)) * 2.0;' +
+                '  float r = length(p) * 2.0;' +
+                '  float a = 1.0;' +
+                '  if (uShape > 0.5 && uShape < 1.5) a = smoothstep(0.68, 0.75, box) - smoothstep(0.95, 1.0, box);' +
+                '  else if (uShape > 1.5 && uShape < 2.5) a = 1.0 - smoothstep(0.22, 0.30, r);' +
+                '  else if (uShape > 2.5 && uShape < 3.5) a = smoothstep(0.82, 0.89, box) - smoothstep(0.98, 1.0, box);' +
+                '  else if (uShape > 3.5) a = pow(1.0 - clamp(r, 0.0, 1.0), 1.6);' +
+                '  float o = a * uAlpha;' +
+                '  gl_FragColor = vec4(uColor * o, o);' +
+                '}';
+
+            const boardFS =
+                'precision mediump float;' +
+                'varying vec2 vUV;' +
+                'uniform vec3 uLight;' +
+                'uniform vec3 uDark;' +
+                'void main() {' +
+                '  vec2 c = floor(vUV * 8.0);' +
+                '  float p = mod(c.x + c.y, 2.0);' +
+                '  vec3 col = mix(uLight, uDark, p);' +
+                '  float grain = fract(sin(dot(vUV, vec2(91.3, 47.7))) * 4375.85) * 0.03;' +
+                '  gl_FragColor = vec4(col + grain, 1.0);' +
+                '}';
+
+            /* Her quad. The texture arrives premultiplied to match the scene's
+               blend, and anything close to transparent is discarded so her
+               bounding box never shows up as a rectangle of haze. */
+            const spriteVS =
+                'attribute vec3 aPos;' +
+                'uniform mat4 uViewProj;' +
+                'uniform mat4 uModel;' +
+                'uniform float uFlip;' +
+                'varying vec2 vUV;' +
+                'void main() {' +
+                '  vUV = vec2(mix(aPos.x, 1.0 - aPos.x, uFlip), 1.0 - aPos.y);' +
+                '  gl_Position = uViewProj * uModel * vec4(aPos, 1.0);' +
+                '}';
+
+            const spriteFS =
+                'precision mediump float;' +
+                'varying vec2 vUV;' +
+                'uniform sampler2D uTex;' +
+                'void main() {' +
+                '  vec4 t = texture2D(uTex, vUV);' +
+                '  if (t.a < 0.01) discard;' +
+                '  gl_FragColor = t;' +
+                '}';
+
+            const lit = chessProgram(gl, litVS, litFS);
+            const flat = chessProgram(gl, flatVS, flatFS);
+            const board = chessProgram(gl, flatVS, boardFS);
+            const sprite = chessProgram(gl, spriteVS, spriteFS);
+            if (!lit || !flat || !board || !sprite) return null;
+
+            const paintCanvas = document.createElement('canvas');
+            paintCanvas.width = PORTRAIT_W;
+            paintCanvas.height = PORTRAIT_H;
+
+            const portrait = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, portrait);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            const ctx = {
+                gl: gl,
+                lit: {
+                    prog: lit,
+                    pos: gl.getAttribLocation(lit, 'aPos'),
+                    nrm: gl.getAttribLocation(lit, 'aNormal'),
+                    viewProj: gl.getUniformLocation(lit, 'uViewProj'),
+                    model: gl.getUniformLocation(lit, 'uModel'),
+                    color: gl.getUniformLocation(lit, 'uColor'),
+                    eye: gl.getUniformLocation(lit, 'uEye'),
+                    shine: gl.getUniformLocation(lit, 'uShine')
+                },
+                flat: {
+                    prog: flat,
+                    pos: gl.getAttribLocation(flat, 'aPos'),
+                    viewProj: gl.getUniformLocation(flat, 'uViewProj'),
+                    model: gl.getUniformLocation(flat, 'uModel'),
+                    color: gl.getUniformLocation(flat, 'uColor'),
+                    alpha: gl.getUniformLocation(flat, 'uAlpha'),
+                    shape: gl.getUniformLocation(flat, 'uShape')
+                },
+                board: {
+                    prog: board,
+                    pos: gl.getAttribLocation(board, 'aPos'),
+                    viewProj: gl.getUniformLocation(board, 'uViewProj'),
+                    model: gl.getUniformLocation(board, 'uModel'),
+                    light: gl.getUniformLocation(board, 'uLight'),
+                    dark: gl.getUniformLocation(board, 'uDark')
+                },
+                sprite: {
+                    prog: sprite,
+                    pos: gl.getAttribLocation(sprite, 'aPos'),
+                    viewProj: gl.getUniformLocation(sprite, 'uViewProj'),
+                    model: gl.getUniformLocation(sprite, 'uModel'),
+                    flip: gl.getUniformLocation(sprite, 'uFlip'),
+                    tex: gl.getUniformLocation(sprite, 'uTex')
+                },
+                pieces: {},
+                quad: glUpload(gl, meshQuadXZ()),
+                billboard: glUpload(gl, meshQuadXY()),
+                frame: glUpload(gl, meshMerge([
+                    meshApply(meshBox(9.4, 0.34, 0.7), m4Compose([0, -0.17, 4.35], 0, 0, 0, 1)),
+                    meshApply(meshBox(9.4, 0.34, 0.7), m4Compose([0, -0.17, -4.35], 0, 0, 0, 1)),
+                    meshApply(meshBox(0.7, 0.34, 8.0), m4Compose([4.35, -0.17, 0], 0, 0, 0, 1)),
+                    meshApply(meshBox(0.7, 0.34, 8.0), m4Compose([-4.35, -0.17, 0], 0, 0, 0, 1))
+                ])),
+                paintCanvas: paintCanvas,
+                paint: paintCanvas.getContext('2d'),
+                portrait: portrait,
+                portraitKey: '',
+                viewProj: m4(),
+                proj: m4(),
+                view: m4(),
+                eye: [0, 6.4, 8.8]
+            };
+
+            for (let k = 1; k <= 6; k++) ctx.pieces[k] = glUpload(gl, chessPieceMesh(k));
+
+            gl.enable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+            /* No back-face culling. Every surface here is generated, and one
+               profile written bottom-up instead of top-down would silently turn
+               a piece inside out; depth sorting costs nothing at this triangle
+               count and cannot get that wrong. */
+            return ctx;
+        }
+
+        /* ---- drawing ---- */
+
+        function chessWorldOf(sq) {
+            return [chessFile(sq) - 3.5, 0, 3.5 - chessRank(sq)];
+        }
+
+        function chessCamera() {
+            const ctx = chess.gl;
+            const canvas = ctx.gl.canvas;
+            const aspect = Math.max(0.35, canvas.width / Math.max(1, canvas.height));
+            const side = chess.flip ? -1 : 1;
+            ctx.eye = [0, 6.4, 8.8 * side];
+            m4Perspective(ctx.proj, 0.72, aspect, 0.5, 60);
+            m4LookAt(ctx.view, ctx.eye, [0, 0.15, -0.5 * side], [0, 1, 0]);
+            m4Mul(ctx.viewProj, ctx.proj, ctx.view);
+        }
+
+        function chessDrawLit(gpu, model, color, shine) {
+            const ctx = chess.gl, gl = ctx.gl;
+            gl.bindBuffer(gl.ARRAY_BUFFER, gpu.vbo);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gpu.ibo);
+            gl.enableVertexAttribArray(ctx.lit.pos);
+            gl.enableVertexAttribArray(ctx.lit.nrm);
+            gl.vertexAttribPointer(ctx.lit.pos, 3, gl.FLOAT, false, 24, 0);
+            gl.vertexAttribPointer(ctx.lit.nrm, 3, gl.FLOAT, false, 24, 12);
+            gl.uniformMatrix4fv(ctx.lit.model, false, model);
+            gl.uniform3fv(ctx.lit.color, color);
+            gl.uniform1f(ctx.lit.shine, shine);
+            gl.drawElements(gl.TRIANGLES, gpu.count, gl.UNSIGNED_SHORT, 0);
+        }
+
+        function chessDrawFlat(sq, color, alpha, shape, lift, size) {
+            const ctx = chess.gl, gl = ctx.gl;
+            const w = chessWorldOf(sq);
+            const s = size || 1;
+            const model = m4Compose([w[0] - s / 2, lift, w[2] - s / 2], 0, 0, 0, [s, 1, s]);
+            gl.bindBuffer(gl.ARRAY_BUFFER, ctx.quad.vbo);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ctx.quad.ibo);
+            gl.enableVertexAttribArray(ctx.flat.pos);
+            gl.vertexAttribPointer(ctx.flat.pos, 3, gl.FLOAT, false, 24, 0);
+            gl.uniformMatrix4fv(ctx.flat.model, false, model);
+            gl.uniform3fv(ctx.flat.color, color);
+            gl.uniform1f(ctx.flat.alpha, alpha);
+            gl.uniform1f(ctx.flat.shape, shape);
+            gl.drawElements(gl.TRIANGLES, ctx.quad.count, gl.UNSIGNED_SHORT, 0);
+        }
+
+        const CHESS_CREAM = [0.96, 0.90, 0.78];
+        const CHESS_HERS = [0.10, 0.60, 0.57];
+        const CHESS_LIGHT_SQ = [0.26, 0.47, 0.51];
+        const CHESS_DARK_SQ = [0.07, 0.20, 0.26];
+        const CHESS_RIM = [0.05, 0.14, 0.18];
+        const CHESS_AMBER = [0.97, 0.76, 0.47];
+        const CHESS_ALARM = [1.0, 0.42, 0.42];
+
+        /* She stands behind the far rim rather than sitting at the edge: from
+           the camera the sightline clears the board there, so the gown is
+           visible instead of being cut off at the table line. */
+        function chessDrawDragoness() {
+            const ctx = chess.gl, gl = ctx.gl;
+            const t = chess.calm ? 0 : chess.clock;
+            const side = chess.flip ? -1 : 1;
+
+            const w = 7.6;
+            const h = w * (PORTRAIT_H / PORTRAIT_W);
+            const bobY = Math.sin(t * 0.85) * 0.055;
+            const swayX = Math.sin(t * 0.5) * 0.06;
+
+            const model = m4Compose(
+                [-w / 2 + swayX, -2.55 + bobY, -9.4 * side], 0, 0, 0, [w, h, 1]);
+
+            gl.useProgram(ctx.sprite.prog);
+            gl.uniformMatrix4fv(ctx.sprite.viewProj, false, ctx.viewProj);
+            gl.uniformMatrix4fv(ctx.sprite.model, false, model);
+            gl.uniform1f(ctx.sprite.flip, chess.flip ? 1 : 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, ctx.portrait);
+            gl.uniform1i(ctx.sprite.tex, 0);
+            gl.bindBuffer(gl.ARRAY_BUFFER, ctx.billboard.vbo);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ctx.billboard.ibo);
+            gl.enableVertexAttribArray(ctx.sprite.pos);
+            gl.vertexAttribPointer(ctx.sprite.pos, 3, gl.FLOAT, false, 24, 0);
+            gl.drawElements(gl.TRIANGLES, ctx.billboard.count, gl.UNSIGNED_SHORT, 0);
+        }
+
+        function chessDrawScene() {
+            const ctx = chess.gl;
+            if (!ctx) return;
+            const gl = ctx.gl;
+
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            gl.clearColor(0, 0, 0, 0);
+            gl.clearDepth(1);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.depthMask(true);
+
+            chessCamera();
+            chessUpdatePortrait();
+
+            /* board */
+            gl.useProgram(ctx.board.prog);
+            gl.uniformMatrix4fv(ctx.board.viewProj, false, ctx.viewProj);
+            gl.uniform3fv(ctx.board.light, CHESS_LIGHT_SQ);
+            gl.uniform3fv(ctx.board.dark, CHESS_DARK_SQ);
+            gl.bindBuffer(gl.ARRAY_BUFFER, ctx.quad.vbo);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ctx.quad.ibo);
+            gl.enableVertexAttribArray(ctx.board.pos);
+            gl.vertexAttribPointer(ctx.board.pos, 3, gl.FLOAT, false, 24, 0);
+            gl.uniformMatrix4fv(ctx.board.model, false, m4Compose([-4, 0, -4], 0, 0, 0, [8, 1, 8]));
+            gl.drawElements(gl.TRIANGLES, ctx.quad.count, gl.UNSIGNED_SHORT, 0);
+
+            gl.useProgram(ctx.lit.prog);
+            gl.uniformMatrix4fv(ctx.lit.viewProj, false, ctx.viewProj);
+            gl.uniform3fv(ctx.lit.eye, ctx.eye);
+            chessDrawLit(ctx.frame, m4Identity(m4()), CHESS_RIM, 0.2);
+
+            /* markers and blob shadows, above the board and writing no depth so
+               they never fight each other */
+            gl.useProgram(ctx.flat.prog);
+            gl.uniformMatrix4fv(ctx.flat.viewProj, false, ctx.viewProj);
+            gl.depthMask(false);
+
+            for (let sq = 0; sq < 64; sq++) {
+                if (chess.board[sq] !== 0) chessDrawFlat(sq, [0, 0, 0], 0.42, 4, 0.008, 0.86);
+            }
+            if (chess.lastMove) {
+                chessDrawFlat(chess.lastMove.from, CHESS_AMBER, 0.20, 0, 0.010, 1);
+                chessDrawFlat(chess.lastMove.to, CHESS_AMBER, 0.26, 0, 0.010, 1);
+            }
+            const checkSide = chessInCheck(chess.side) ? chess.side : 0;
+            if (checkSide) {
+                const k = chessKingSquare(checkSide);
+                if (k >= 0) {
+                    chessDrawFlat(k, CHESS_ALARM, 0.34, 0, 0.011, 1);
+                    chessDrawFlat(k, CHESS_ALARM, 0.95, 1, 0.012, 1);
+                }
+            }
+            for (const m of chess.targets) {
+                const occupied = chess.board[m.to] !== 0 || m.ep;
+                chessDrawFlat(m.to, CHESS_AMBER, occupied ? 0.9 : 0.6, occupied ? 1 : 2, 0.013, 1);
+            }
+            if (chess.sel >= 0) chessDrawFlat(chess.sel, CHESS_AMBER, 0.95, 3, 0.014, 1);
+            const grid = document.getElementById('chess-grid');
+            if (grid && grid.contains(document.activeElement)) {
+                chessDrawFlat(chess.focus, [1, 1, 1], 0.9, 3, 0.015, 1);
+            }
+
+            gl.depthMask(true);
+
+            /* pieces */
+            gl.useProgram(ctx.lit.prog);
+            for (let sq = 0; sq < 64; sq++) {
+                const p = chess.board[sq];
+                if (p === 0) continue;
+                const w = chessWorldOf(sq);
+                /* Knights face across the board, so hers look back at you. */
+                const yaw = Math.abs(p) === 2 ? (p > 0 ? 0 : Math.PI) : 0;
+                chessDrawLit(ctx.pieces[Math.abs(p)],
+                    m4Compose([w[0], 0, w[2]], 0, yaw, 0, 0.92),
+                    p > 0 ? CHESS_CREAM : CHESS_HERS,
+                    p > 0 ? 0.45 : 0.55);
+            }
+
+            /* She is last: alpha edges blend over whatever is behind, and the
+               depth test still lets the board cut off her skirt. */
+            gl.depthMask(false);
+            chessDrawDragoness();
+            gl.depthMask(true);
+        }
+
+        /* ---- layout, projection, frame ---- */
+
+        function chessLayout() {
+            const canvas = document.getElementById('chess-canvas');
+            if (!canvas) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+            const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+            if (canvas.width !== w || canvas.height !== h) {
+                canvas.width = w;
+                canvas.height = h;
+            }
+            if (chess.gl) {
+                chessCamera();
+                chessDrawScene();
+            }
+            chessProjectGrid();
+        }
+
+        /* The squares are placed where the camera puts them and clipped to
+           their own projected quad, so a click at the far end of the board
+           lands on the square it looks like it lands on. */
+        function chessProjectGrid() {
+            const grid = document.getElementById('chess-grid');
+            const canvas = document.getElementById('chess-canvas');
+            if (!grid || !canvas || !chess.gl || grid.classList.contains('flat')) return;
+
+            const W = canvas.clientWidth, H = canvas.clientHeight;
+            if (!W || !H) return;
+            /* A flip changes the camera, and the squares have to move with it
+               before the next frame draws rather than after. */
+            chessCamera();
+            const vp = chess.gl.viewProj;
+
+            for (let sq = 0; sq < 64; sq++) {
+                const btn = grid.children[chessScreenRow(sq)].children[chessScreenCol(sq)];
+                const w = chessWorldOf(sq);
+                const pts = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]].map((c) => {
+                    const n = m4Project(vp, w[0] + c[0], 0.02, w[2] + c[1]);
+                    return [(n[0] * 0.5 + 0.5) * W, (0.5 - n[1] * 0.5) * H];
+                });
+
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                for (const p of pts) {
+                    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                    minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+                }
+
+                btn.style.left = minX + 'px';
+                btn.style.top = minY + 'px';
+                btn.style.width = Math.max(1, maxX - minX) + 'px';
+                btn.style.height = Math.max(1, maxY - minY) + 'px';
+                btn.style.clipPath = 'polygon(' + pts
+                    .map((p) => (p[0] - minX) + 'px ' + (p[1] - minY) + 'px')
+                    .join(', ') + ')';
+            }
+        }
+
+        function chessFrame(now) {
+            if (!chess.last) chess.last = now;
+            const dt = Math.min(0.05, (now - chess.last) / 1000);
+            chess.last = now;
+            chess.clock += dt;
+
+            if (chess.moodUntil && chess.clock > chess.moodUntil) {
+                chessMood(chess.thinking ? 'thinking' : 'idle', 0);
+            }
+
+            /* Blink: a short shut every few seconds, off when the viewer has
+               asked for less motion. */
+            if (!chess.calm) {
+                chess.blink -= dt;
+                if (chess.blink < -3.4 - Math.random() * 2.6) chess.blink = 0.13;
+            }
+
+            chessDrawScene();
+            chess.raf = requestAnimationFrame(chessFrame);
         }
 
         async function ensurePdfDeps() {
